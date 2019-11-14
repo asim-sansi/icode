@@ -15,12 +15,11 @@ import shutil
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-#pytesseract.pytesseract.tesseract_cmd ="../resources/tessearct.exe"
+
 # In[2]:
 from prompt_toolkit.key_binding.bindings.named_commands import self_insert
 
 
-# noinspection PyPep8Naming
 class HTMLComponent:
     def __init__(self, img, x, y, h, w, cnt):
         self.tag = "img"
