@@ -37,7 +37,8 @@ class HTMLComponent:
 
     def setImage(self, img):
         self.img = img
-
+    def getStyle(self):
+        return self.styles;
     def setCoordinates(self, x, y):
         self.x = x
         self.y = y
@@ -59,7 +60,8 @@ class HTMLComponent:
 
     def setPath(self, p):
         self.path = p;
-
+    def getColors(self):
+        return (self.bgcolor[2],self.bgcolor[1],self.bgcolor[0]),(self.color[2],self.color[1],self.color[0]);
     def getDominantColor(self):
         # You may need to convert the color.
         my_img = np.array(self.img, dtype=np.uint8)
@@ -70,9 +72,11 @@ class HTMLComponent:
         my_colours = pil_image.getcolors(100000)
         if my_colours:
             self.styles['background-color'] = "rgb" + str(max(my_colours, key=itemgetter(0))[1])
+            self.bgcolor=max(my_colours, key=itemgetter(0))[1];
             my_colours.remove(max(my_colours, key=itemgetter(0)))
             if my_colours:
                 self.styles['color'] = "rgb" + str(max(my_colours, key=itemgetter(0))[1])
+                self.color = max(my_colours, key=itemgetter(0))[1];
             else:
                 self.styles['color'] = "white"
         else:
@@ -137,8 +141,8 @@ class TEXT(HTMLComponent):
           #  cv2.imshow("h",self.img)
          #   cv2.waitKey()
         self.txt = (pytesseract.image_to_string(super().getImage()))
-        if len(self.txt) == 0:
-            return "Text"
+        if(len(self.txt)==0):
+            return "<img src="+self.path+">"
         return self.txt
 
     def Code(self):
@@ -215,6 +219,19 @@ def contourIntersect(original_image, contour1, contour2):
 
 
 class HtmlMapper:
+    def g(self,image,webpage):
+        for e in webpage.getelements():
+            x,y,w,h=e.getAttributes()
+            cv2.rectangle(image, (x, y), (x +w, y+h), e.getColors()[0], -1)
+            cv2.rectangle(image, (x-1, y-1), (x + w+2, y + h+2), (0,0,0), 1)
+            cv2.rectangle(image, (x+5, y+5), (x +w-5, y+h-5), e.getColors()[1], -1)
+            for e1 in e.getSubElements():
+                x, y, w, h = e1.getAttributes()
+                cv2.rectangle(image, (x, y), (x + w, y + h), e1.getColors()[0], -1)
+                cv2.rectangle(image, (x - 1, y - 1), (x + w + 2, y + h + 2), (0, 0, 0), 1)
+                cv2.rectangle(image, (x + 5, y + 5), (x + w - 5, y + h - 5), e1.getColors()[1], -1)
+            #cv2.putText(image, "Background Color", (x-1, y+5), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 0, 0), 1)
+        cv2.imwrite("Label.png", image)
     def ImgToWebpage(self, image, text):
 
         # Creating instance of Webpage Class
@@ -258,7 +275,9 @@ class HtmlMapper:
 
         # cv2.imshow('final', minus_img)
         # cv2.waitKey()
+        self.g(image.copy(),webpage)
         return webpage
+
 
     def MapHtml(self, webpage, path):
         code = ""
@@ -277,6 +296,7 @@ class HtmlMapper:
                 # x1,y1,w1,h1=e1.getAttributes()
                 e1.setPath(access_path+imname2)
                 code += e1.Code();
+
                 # code+="<IMG STYLE=\"position:absolute; TOP:"+str(y1)+"px;LEFT:"+str(x1)+"px; WIDTH:"+str(w1)+"px; HEIGHT:"+str(h1)+"px\" SRC=\""+path1+"\">"
             code += e.Code()
             # code+="<IMG STYLE=\"position:absolute; TOP:"+str(y)+"px;LEFT:"+str(x)+"px; WIDTH:"+str(w)+"px; HEIGHT:"+str(h)+"px\" SRC=\""+ipath+"\">"
@@ -358,7 +378,7 @@ class HtmlMapper:
             # cv2.imshow("A",fg)
             # cv2.waitKey()
             cv2.rectangle(im2, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
+            # cv2.putText(im2, "component", (x, y), cv2.FONT_HERSHEY_SIMPLEX,0.1, (255,0,0), 1)
         # return thresh1
         cv2.imwrite("otso.png", im2)
         return dilation  # im2
@@ -381,7 +401,7 @@ def main(arg):
     # p = "../generated_resources/webpages/"
 
     # Path of image used to instantiate image object
-    img_name = "../resources/123.png"  # path of image
+    img_name = "../resources/flex.png"  # path of image
     i = cv2.imread(img_name)
 
     # HTML Mapper Instantiated
