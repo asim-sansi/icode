@@ -141,7 +141,7 @@ class TEXT(HTMLComponent):
           #  cv2.imshow("h",self.img)
          #   cv2.waitKey()
         self.txt = (pytesseract.image_to_string(super().getImage()))
-        if(len(self.txt)==0):
+        if len(self.txt) == 0:
             return "<img src="+self.path+">"
         return self.txt
 
