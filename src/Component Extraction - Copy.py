@@ -32,7 +32,7 @@ class HTMLComponent:
         self.cnt = cnt
         self.path = ""
         self.sub = []  # sub elements
-        self.styles={}
+        self.styles = {}
         self.getDominantColor()
 
     def setImage(self, img):
@@ -127,21 +127,17 @@ class TEXT(HTMLComponent):
         super().setPath(p)
 
     def LinkCheck(self):
-        img = cv2.cvtColor(super().getImage(), cv2.COLOR_BGR2RGB)
-        im_pil = Image.fromarray(img)
-        # im_np = np.asarray(im_pil)
-        self.link = BlueCheck(im_pil)
-        print(self.link)
-        self.type = "a"
+        if self.styles['color'] == "rgb(0,0,255)":
+            self.tag = "a"
+            print(self.tag)
 
     def translateText(self):
-        if(self.styles['color']=="rgb(255, 255, 255)"):
-            self.img=cv2.bitwise_not(self.img)
+        if self.styles['color'] == "rgb(255, 255, 255)":
+            self.img = cv2.bitwise_not(self.img)
           #  cv2.imshow("h",self.img)
          #   cv2.waitKey()
         self.txt = (pytesseract.image_to_string(super().getImage()))
-        if(len(self.txt)==0):
-
+        if len(self.txt) == 0:
             return "Text"
         return self.txt
 
@@ -246,11 +242,11 @@ class HtmlMapper:
             if w > 15 and h > 15:  # and len(approx)==4:# and x+w<700 and y+h<700:#15
                 idx += 1
                 new_img = image[y:y + h, x:x + w]
-                if (text == True):# and h < 50 and h1[2] == -1 and isText(new_img)):  # has no child
+                if text:  # and h < 50 and h1[2] == -1 and isText(new_img)):  # has no child
                     element = TEXT(new_img, x, y, h, w, 0)
                 else:
                     element = HTMLComponent(new_img, x, y, h, w, 0)
-                if (h1[3] != -1):
+                if h1[3] != -1:
                     # if new image is less than 80% of parent image
                     # pshape=parentElement.getImage().shape
                     # newshape=new_img.shape
