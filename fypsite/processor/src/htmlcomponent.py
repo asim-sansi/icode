@@ -21,6 +21,8 @@ class HTMLComponent:
         self.styles['border'] = "solid black 0px"
         self.styles['color'] = "rgb(0, 0, 0)"
         self.styles['background-color'] = "rgb(255, 255, 255)"
+        self.styles['font-size'] = "16px"
+        self.styles['font-family'] = "Arial, Helvetica, sans-serif"
         self.x = x
         self.y = y
         self.h = h
@@ -79,7 +81,7 @@ class HTMLComponent:
                 self.styles['color'] = "rgb" + str(max(my_colours, key=itemgetter(0))[1])
                 self.color = max(my_colours, key=itemgetter(0))[1];
             else:
-                self.styles['color'] = "white"
+                self.styles['color'] = "rgb(255,255,255)"
         else:
             self.styles['background-color'] = "red"
 

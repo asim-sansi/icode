@@ -9,7 +9,7 @@ pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tessera
 
 
 def main(arg):
-    ocr_integration = arg[1];  # set true to use OCR
+    ocr_integration = arg[1]  # set true to use OCR
 
     path = "../generated_resources/"
 
@@ -25,8 +25,4 @@ def main(arg):
     file.write(code)
     file.close()
     os.system("start \"\" " + path + "webpages/" + "webpage.html\"")
-    cv2.waitKey();
-
-
-if __name__ == "__main__":
-    main(sys.argv[1:])
+    cv2.waitKey()

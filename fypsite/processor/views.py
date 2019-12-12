@@ -4,6 +4,7 @@
 import base64
 import io
 
+
 import threading
 from PIL import Image
 from django.http import JsonResponse
@@ -27,8 +28,8 @@ def initiate(request):
     # handler.write(image_data)
     # handler.close()
 
-    download_thread = threading.Thread(target=process_function, args=[request, [image, request.POST['getText']]])
-    download_thread.start()
+    process_thread = threading.Thread(target=process_function, args=[request, [image, request.POST['getText']]])
+    process_thread.start()
     return JsonResponse({"data": "Your query is being processed and will open in a new tab shortly"})
 
 

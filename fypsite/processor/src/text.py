@@ -26,20 +26,23 @@ class TEXT(HTMLComponent):
 
     def SpecifyType(self):
         fontsize = self.getFontSize()
-        if (fontsize >= 32):
-            self.type = 'h1'
-        elif (fontsize >= 24):
-            self.type = 'h2'
-        elif (fontsize >= 20):
-            self.type = 'h3'
+        # if (fontsize >= 32):
+        #     self.type = 'h1'
+        # elif (fontsize >= 24):
+        #     self.type = 'h2'
+        # elif (fontsize >= 20):
+        #     self.type = 'h3'
         # elif(fontsize>=16):
         #     self.type='h4'
         # elif(fontsize>=12):
         #     self.type='h5'
         # elif(fontsize>=11):
         #     self.type='h6'
-        else:
-            self.type = 'p'
+        # else:
+        #     self.type = 'p'
+        self.type = 'p'
+        # self.styles['font-size'] = str(fontsize)+'px'
+
 
     def translateText(self):
         if self.styles['color'] == "rgb(255, 255, 255)":
