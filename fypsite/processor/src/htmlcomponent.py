@@ -2,11 +2,14 @@ import numpy as np
 import cv2
 from operator import itemgetter
 from PIL import Image
+import pytesseract
+
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 
 class HTMLComponent:
     def __init__(self, img, x, y, h, w, cnt):
-        self.tag = "img"
+        self.tag = "div"
         self.value = ""
         self.img = img
         # noinspection PyDictCreation
@@ -18,7 +21,7 @@ class HTMLComponent:
         self.styles['display'] = "block"
         self.styles['position'] = "absolute"
         self.styles['text-align'] = "center"
-        self.styles['border'] = "solid black 0px"
+        self.styles['border'] = "solid black 1px"
         self.styles['color'] = "rgb(0, 0, 0)"
         self.styles['background-color'] = "rgb(255, 255, 255)"
         self.styles['font-size'] = "16px"
@@ -100,13 +103,26 @@ class HTMLComponent:
             self.styles['border-radius'] = str(len(approx) * 5) + "px"
         return
 
+    def translate_text(self):
+        if self.styles['color'] == "rgb(255, 255, 255)":
+            self.img = cv2.bitwise_not(self.img)
+        #  cv2.imshow("h",self.img)
+        #   cv2.waitKey()
+        self.txt = (pytesseract.image_to_string(self.getImage()))
+        if len(self.txt) == 0:
+            return "<img src=" + self.path + ">"
+        return self.txt
+
     def Code(self):
         code = "<" + \
-               "div" + \
+               self.tag + \
                " STYLE='"
         for key, value in self.styles.items():
             code += key + ": " + value + ";"
 
-        code += "'>TEXT</div>\n"
-        # " SRC='" + self.path + "'>"
+        code += "'>"
+        code += self.translate_text()
+        if self.tag != 'input' and self.tag != 'img':
+            code += '</' + self.tag + '>\n'
+
         return code

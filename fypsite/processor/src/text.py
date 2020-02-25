@@ -9,20 +9,15 @@ class TEXT(HTMLComponent):
     def __init__(self, img, x, y, h, w, p):
         super().__init__(img, x, y, h, w, p)
         self.txt = " "
-        self.type = " "
+        self.type = "p"
         self.link = False
 
-        self.SpecifyType()
+        # self.SpecifyType()
         # self.LinkCheck()
         # print(self.type)
 
     def setPath(self, p):
         super().setPath(p)
-
-    def LinkCheck(self):
-        if self.styles['color'] == "rgb(0,0,255)":
-            self.tag = "a"
-            print(self.tag)
 
     def SpecifyType(self):
         fontsize = self.getFontSize()

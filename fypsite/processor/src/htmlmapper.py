@@ -41,6 +41,7 @@ class HtmlMapper:
         #h[i][1] holds previous child in same heiarchy
         #h[i][2] holds first child in next heiarchy
         #h[i][3] holds parent from previous heirarchy
+        idx = 0
         for c in cnts:
             x, y, w, h = cv2.boundingRect(c)
             approx = cv2.approxPolyDP(c, 0.01 * cv2.arcLength(c, True), True)
@@ -70,10 +71,7 @@ class HtmlMapper:
         """w > 15 and h > 15"""
         if 1:
             new_img = image[y:y + h, x:x + w]
-            if text:
-                element = TEXT(new_img, x, y, h, w, 0)
-            else:
-                element = HTMLComponent(new_img, x, y, h, w, 0)
+            element = HTMLComponent(new_img, x, y, h, w, 0)
 
             element.set_shape(approx)
             return element
@@ -114,13 +112,15 @@ class HtmlMapper:
                 webpage.elements[h1[3]].AddSubElement(webpage.elements[idx])
             idx += 1
 
-        for element in webpage.elements:
-            if element.w <= 15 and element.h <= 15:
-                for sub in element.sub:
-                    webpage.elements.remove(sub)
-                webpage.elements.remove(element)
-            else:
-                print(element.sub)
+
+        # element_array = webpage.elements.copy()
+        # for element in element_array:
+        #     if element.w < 15 and element.h < 15:
+        #         for sub in element.sub:
+        #             webpage.elements.remove(sub)
+        #         webpage.elements.remove(element)
+        #     else:
+        #         print(element.sub)
         # cv2.imshow('final', minus_img)
         # cv2.waitKey()
         self.g(image.copy(), webpage)
@@ -145,9 +145,6 @@ class HtmlMapper:
                 e1.setPath(access_path + imname2)
                 code += e1.Code();
 
-                # code+="<IMG STYLE=\"position:absolute; TOP:"+str(y1)+"px;LEFT:"+str(x1)+"px; WIDTH:"+str(w1)+"px; HEIGHT:"+str(h1)+"px\" SRC=\""+path1+"\">"
-
-            # code+="<IMG STYLE=\"position:absolute; TOP:"+str(y)+"px;LEFT:"+str(x)+"px; WIDTH:"+str(w)+"px; HEIGHT:"+str(h)+"px\" SRC=\""+ipath+"\">"
             index += 1
 
         return code
@@ -191,7 +188,7 @@ class HtmlMapper:
 
         w = self.ImgToWebpage(image, text)
         s = self.MapHtml(w, path)
-        return s;
+        return s
 
     def EnhanceInnerSurface(self, img, omg):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
