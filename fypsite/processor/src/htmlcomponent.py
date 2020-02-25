@@ -23,6 +23,7 @@ class HTMLComponent:
         self.styles['background-color'] = "rgb(255, 255, 255)"
         self.styles['font-size'] = "16px"
         self.styles['font-family'] = "Arial, Helvetica, sans-serif"
+        self.styles['padding'] = "0%"
         self.x = x
         self.y = y
         self.h = h

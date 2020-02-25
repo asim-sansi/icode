@@ -2,6 +2,7 @@ import cv2
 from .webpage import Webpage
 from .htmlcomponent import HTMLComponent
 from .text import TEXT
+import numpy as np
 
 
 class HtmlMapper:
@@ -18,16 +19,14 @@ class HtmlMapper:
                 cv2.rectangle(image, (x + 5, y + 5), (x + w - 5, y + h - 5), e1.getColors()[1], -1)
         cv2.imwrite("Label.png", image)
 
-    def ImgToWebpage(self, image, text):
-
-        # Creating instance of Webpage Class
-        webpage = Webpage()
+    def ImageToElements(self, parentElement, text):
+        image = parentElement.img
 
         # Storing height and width of image
         hhh, www = image.shape[:2]
 
         # Creating initial boundary around image
-        cv2.rectangle(image, (0, 0), (www, hhh), (255, 255, 255), 10)
+        cv2.rectangle(image, (0, 0), (www, hhh), (255, 255, 255), www//150)
 
         img = self.getBoundariesEnchanced(image.copy())
         img = self.EnhanceInnerSurface(img.copy(), image)
@@ -36,10 +35,13 @@ class HtmlMapper:
         edged = cv2.Canny(img, 10, 20)
         cv2.imshow("canny2nd", edged)
         edged = img
-        (cnts, h) = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        idx = 0
-        parentElement = HTMLComponent(-1, -1, -1, -1, -1, 0)
-        for c, h1 in zip(cnts, h[0]):
+        (cnts, h) = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        #h[i] holds info for cnts[i]
+        #h[i][0] holds next child in same heiarchy
+        #h[i][1] holds previous child in same heiarchy
+        #h[i][2] holds first child in next heiarchy
+        #h[i][3] holds parent from previous heirarchy
+        for c in cnts:
             x, y, w, h = cv2.boundingRect(c)
             approx = cv2.approxPolyDP(c, 0.01 * cv2.arcLength(c, True), True)
             if w > 15 and h > 15:  # and len(approx)==4:# and x+w<700 and y+h<700:#15
@@ -61,6 +63,64 @@ class HtmlMapper:
                     parentElement = element;
                     webpage.addElement(element)
 
+
+    def ElementFromContour(self, text, image, c):
+        x, y, w, h = cv2.boundingRect(c)
+        approx = cv2.approxPolyDP(c, 0.01 * cv2.arcLength(c, True), True)
+        """w > 15 and h > 15"""
+        if 1:
+            new_img = image[y:y + h, x:x + w]
+            if text:
+                element = TEXT(new_img, x, y, h, w, 0)
+            else:
+                element = HTMLComponent(new_img, x, y, h, w, 0)
+
+            element.set_shape(approx)
+            return element
+        else:
+            return None
+
+    def ImgToWebpage(self, image, text):
+
+        # Creating instance of Webpage Class
+        webpage = Webpage()
+
+        # Storing height and width of image
+        hhh, www = image.shape[:2]
+
+        # Creating initial boundary around image
+        cv2.rectangle(image, (0, 0), (www, hhh), (255, 255, 255), www//150)
+
+        img = self.getBoundariesEnchanced(image.copy())
+        img = self.EnhanceInnerSurface(img.copy(), image)
+
+        # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        edged = cv2.Canny(img, 10, 20)
+        cv2.imshow("canny2nd", edged)
+        edged = img
+        (cnts, h) = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        parentElement = HTMLComponent(image, -1, -1, -1, -1, 0)
+        webpage.addElement(parentElement)
+        idx = 0
+        for c, h1 in zip(cnts, h[0]):
+            element = self.ElementFromContour(text, image, c)
+            webpage.addElement(element)
+            idx += 1
+        idx = 1
+        for h1 in h[0]:
+            if h1[3] == -1:
+                parentElement.AddSubElement(webpage.elements[idx])
+            else:
+                webpage.elements[h1[3]].AddSubElement(webpage.elements[idx])
+            idx += 1
+
+        for element in webpage.elements:
+            if element.w <= 15 and element.h <= 15:
+                for sub in element.sub:
+                    webpage.elements.remove(sub)
+                webpage.elements.remove(element)
+            else:
+                print(element.sub)
         # cv2.imshow('final', minus_img)
         # cv2.waitKey()
         self.g(image.copy(), webpage)

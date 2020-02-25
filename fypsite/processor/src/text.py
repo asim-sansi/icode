@@ -10,7 +10,7 @@ class TEXT(HTMLComponent):
         super().__init__(img, x, y, h, w, p)
         self.txt = " "
         self.type = " "
-        self.link = False;
+        self.link = False
 
         self.SpecifyType()
         # self.LinkCheck()
