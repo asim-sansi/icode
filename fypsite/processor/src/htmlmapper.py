@@ -23,10 +23,10 @@ class HtmlMapper:
         image = parentElement.img
 
         # Storing height and width of image
-        hhh, www = image.shape[:2]
+        i_height, i_width = image.shape[:2]
 
-        # Creating initial boundary around image
-        cv2.rectangle(image, (0, 0), (www, hhh), (255, 255, 255), www//150)
+        # Creating initial boundary around image; thickness with respect to image width
+        cv2.rectangle(image, (0, 0), (i_width, i_height), (255, 255, 255), i_width//150)
 
         img = self.getBoundariesEnchanced(image.copy())
         img = self.EnhanceInnerSurface(img.copy(), image)

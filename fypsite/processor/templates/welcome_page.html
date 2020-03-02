@@ -9,14 +9,15 @@
         <!-- styles -->
         {% load static %}
         <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+
     </head>
     <body>
 
-        <div class="container-fluid"  style="background-color: #e9edee; height:1000px; padding: 0px;">
+        <div class="container-fluid"  style="background-color: #dcf3f9; height:1000px; padding: 0px;">
 
-            <nav class="navbar navbar-expand-lg navbar-light bg-light">
-                <a class="navbar-brand" href="">
-                    <img src="static/images/iCode_logo_small.png" style="height: 50px">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light" style="box-shadow: 0px 1px 2px black">
+                <a class="navbar-brand" href="/">
+                    <img src="{% static 'images/iCode_logo_small.png' %}" style="height: 50px">
                 </a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -25,79 +26,69 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav mr-auto">
                         <li class="nav-item">
-                            <a class="nav-link" href="#">About Us</a>
+                            <a class="nav-link lead">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Contact Us</a>
+                            <a class="nav-link" href="/templates">Templates</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/aboutus">About Us</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/contactus">Contact Us</a>
                         </li>
                     </ul>
-                    <form class="form-inline my-2 my-lg-0">
-                        <input class="form-control mr-sm-2" type="search" placeholder="Search Our Library" aria-label="Search">
-                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                    <form class="form-inline my-2 my-lg-0" method="get" action="/templates">
+                        <input class="form-control mr-sm-2" type="search" name="query" placeholder="Search Our Library" aria-label="Search">
+                        <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
                     </form>
                 </div>
             </nav>
-            <div class="row" style="padding : 20px"></div>
-            <div class="row" style="padding : 30px">
-                <div class="col-lg-4 col-md-6 col-12 text-center">
-                    <div class="input-group mb-3 text-left">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text" id="inputGroupFileAddon01">Upload</span>
-                        </div>
-                        <div class="image-file" >
-                            <input style="cursor:pointer" type="file" accept="image/*"  class="image-file-input" id="inputGroupFile01" aria-describedby="inputGroupFileAddon01" onchange="readURL(this);"/>
-                            <label style="cursor:pointer" class="custom-file-label" for="inputGroupFile01">Choose image</label>
-                        </div>
-                    </div>
-                    <img id="view_image" style="max-width:100%; max-height:200px" src="#" alt="No Image Selected" />
-                    <button id="initiate" class="btn btn-outline-primary btn-block disabled" onclick="beginTranslation()" style="margin-top: 5%; cursor: not-allowed;">
-                        Go!
-                    </button>
-                </div>
-                <div class="col-lg-4 col-md-6 col-12">
-
-                    <p>
-                        <button style="width:49%" class="btn btn-outline-secondary" type="button" data-toggle="collapse" onclick="$('#instructionSet').addClass( 'collapse' ); $('#optionSet').toggleClass( 'collapse' )" aria-expanded="false" aria-controls="collapseExample">
-                        View Options
-                        </button>
-                        <button style="width:49%" class="btn btn-outline-secondary" type="button" data-toggle="collapse" onclick="$('#instructionSet').toggleClass( 'collapse' ); $('#optionSet').addClass( 'collapse' )" aria-expanded="false" aria-controls="collapseExample">
-                        View Instructions
-                        </button>
-                    </p>
-                    <div class="collapse" id="instructionSet">
-                        <div class="card card-body">
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item">1. Upload a GUI Screenshot</li>
-                                <li class="list-group-item">2. Choose desired options for processing</li>
-                                <li class="list-group-item">3. Begin process by clicking the 'Go' button</li>
-                                <li class="list-group-item">4. View Results</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="collapse" id="optionSet">
-                        <div class="card card-body">
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item">
-                                    <input type="checkbox" class="form-check-input" id="Check1">
-                                    <label class="form-check-label" for="Check1">Include Translated Text</label>
-                                </li>
-                                <li class="list-group-item">
-                                    <input type="checkbox" class="form-check-input" id="Check2">
-                                    <label class="form-check-label" for="Check2">Option 2</label>
-                                </li>
-                                <li class="list-group-item">
-                                    <input type="checkbox" class="form-check-input" id="Check3">
-                                    <label class="form-check-label" for="Check3">Option 3</label>
-                                </li>
-                            </ul>
-                        </div>
+            <div class="container-fluid h-100" style="background-image:url({% static 'images/webconstruction.png' %}); background-repeat:no-repeat;">
+                <div class="row" style="padding: 20px;">
+                    <div class="col-12 ">
+                        <h2 class="text-center text-primary">Convert Image to HTML and Create Web Designs in Minutes</h2>
+                        <h5 class="text-center text-muted">Bringing the latest Web Development Solutions to your platform</h5>
+                        
                     </div>
                 </div>
-                <div class="col-lg-4 d-none d-lg-block" style="padding: none;">
-                    <img src="static/images/laptop.png" style="width: 100%">
+                <div class="row">
+                    <div class="col-12 col-sm-6">
+                        <a href="/demo" class="btn btn-block btn-lg btn-primary">Get Started</a>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                        <a href="/templates" class="btn btn-block btn-lg btn-primary">View Our Template Catalogue</a>
+                    </div>
+                </div>
+                <div class="row" style="padding: 220px;"></div>
+                <div class="row">
+                    <div class="col-12">
+                        <p class="h4 text-center text-primary">Guaranteed <strong>Speed</strong> and <strong>Cost</strong> Efficiency</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-sm-4 text-center">
+                        <img src="{% static 'images/robot.png' %}" height="200px" class="box bounce-4" style="animation-duration: 2s;">
+                        <h5 class="text-primary">Intelligent AI Classification</h5>
+                    </div>
+                    <div class="col-12 col-sm-4 text-center">
+                        <img src="{% static 'images/fast.png' %}" height="200px" class="box engine-rev">
+                        <h5 class="text-primary">Ultra High Translation Speeds</h5>
+                    </div>
+                    <div class="col-12 col-sm-4 text-center">
+                        <img src="{% static 'images/cost.png' %}" height="200px" class="box rotate-y" style="animation-duration: 4s;">
+                        <h5 class="text-primary">Reduced Development Costs</h5>
+                    </div>
                 </div>
             </div>
         </div>
+        <footer class="page-footer border-top" style="box-shadow: -1px -0.5px 2px black">
+
+            <div class="footer-copyright bg-light text-muted text-center py-5">
+                <strong>© 2020 Copyright: iCode Inc.</strong>
+            </div>
+
+        </footer>
         <script src="https://code.jquery.com/jquery.js"></script>
         {% load static %}
         <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->

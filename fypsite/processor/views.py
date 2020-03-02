@@ -10,13 +10,45 @@ from PIL import Image
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-
+from .models import Template
 from .src import processor as engine
 
 
 def index(request):
     return render(request, "welcome_page.html")
 
+
+def show_form(request):
+    image = ""
+    if 'image' in request.GET:
+        image = request.GET['image']
+    print(image)
+    return render(request, "process_form.html", {"image": str(image)})
+
+
+def show_templates(request):
+    query = ""
+    templates = []
+    if 'query' in request.GET:
+        query = request.GET['query']
+        templates = Template.objects.filter(name__contains=query)
+    else:
+        templates = Template.objects.all()
+    response = {
+        "query": query,
+        "count": len(templates),
+        "range": range(len(templates)),
+        "templates": templates
+    }
+    return render(request, "templates.html", response)
+
+
+def show_aboutus(request):
+    return render(request, "aboutus.html")
+
+
+def show_contactus(request):
+    return render(request, "contactus.html")
 
 @csrf_exempt
 def initiate(request):
@@ -31,8 +63,6 @@ def initiate(request):
     process_thread = threading.Thread(target=process_function, args=[request, [image, request.POST['getText']]])
     process_thread.start()
     return JsonResponse({"data": "Your query is being processed and will open in a new tab shortly"})
-
-
 
 
 def process_function(request, some_args):

@@ -1,0 +1,86 @@
+
+
+.result-container{
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.result-card{
+    width:90%;
+    height: 400px;
+    margin-top:-30%;
+    display: none;
+    position: absolute;
+    z-index: 100;
+    overflow-y: scroll;
+    scrollbar-width: 2px;
+    scrollbar-width: none;
+}
+
+.result-container:hover > .result-card{
+    display: block;
+    box-shadow: 0px 0px 5px 3px #007bff;
+}
+.result-container:hover > .result-item{
+    box-shadow: 0px 0px 5px 3px #007bff;
+}
+.result-container:hover{
+    color: #007bff;
+}
+
+.result-item {
+    border: 0px;
+    box-shadow: 0px 0px 5px black;
+}
+
+
+.box:hover {
+    align-self: flex-end;
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+}
+.bounce-4 {
+    animation-name: bounce-4;
+    animation-timing-function: ease;
+}
+@keyframes bounce-4 {
+    0%   { transform: scale(1,1)    translateY(0); }
+    10%  { transform: scale(1.1,.9) translateY(0); }
+    30%  { transform: scale(.9,1.1) translateY(-20px); }
+    50%  { transform: scale(1,1)    translateY(0); }
+    100% { transform: scale(1,1)    translateY(0); }
+}
+
+.rotate-y {
+    animation-name: rotate-y;
+    animation-timing-function: linear;
+}
+@keyframes rotate-y {
+    0%   { transform:rotateY(0deg); }
+    10%  { transform:rotateY(90deg); }
+    30%  { transform:rotateY(180deg); }
+    50%  { transform: rotateY(270deg); }
+    100% { transform: rotateY(360deg); }
+}
+
+.engine-rev {
+    animation-name: engine-rev;
+    animation-timing-function: linear;
+}
+@keyframes engine-rev {
+    0%   { transform:rotateZ(0deg); }
+    5%  { transform:rotateZ(7deg); }
+    10%  { transform:rotateZ(5deg); }
+    20%  { transform: rotateZ(6deg); }
+    25% { transform: rotateZ(2deg); }
+    35%   { transform:rotateZ(4deg); }
+    40%  { transform:rotateZ(0deg); }
+    50%  { transform:rotateZ(4deg); }
+    55%  { transform: rotateZ(3deg); }
+    65% { transform: rotateZ(5deg); }
+    70%   { transform:rotateZ(4deg); }
+    80%  { transform:rotateZ(6deg); }
+    85%  { transform:rotateZ(4deg); }
+    95%  { transform: rotateZ(5deg); }
+    100% { transform: rotateZ(0deg); }
+}

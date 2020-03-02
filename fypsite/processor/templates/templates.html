@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>iCode</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- Bootstrap -->
+        {% load static %}
+        <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
+        <!-- styles -->
+        {% load static %}
+        <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+    </head>
+    <body>
+
+        <div class="container-fluid"  style="background-color: #dcf3f9; padding: 0px;">
+
+            <nav class="navbar navbar-expand-lg navbar-light bg-light" style="box-shadow: 0px 1px 2px black">
+                <a class="navbar-brand" href="/">
+                    <img src="{% static 'images/iCode_logo_small.png' %}" style="height: 50px">
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link lead">Templates</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/aboutus">About Us</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/contactus">Contact Us</a>
+                        </li>
+                    </ul>
+                    <form class="form-inline my-2 my-lg-0" method="get" action="/templates">
+                        <input class="form-control mr-sm-2" type="search" name="query" placeholder="Search Our Library" aria-label="Search">
+                        <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
+                    </form>
+                </div>
+            </nav>
+            <div class="container-fluid">
+                <div class="row">
+                    {% for item in templates %}
+                        <div class="col-md-6 col-12 text-center" style="padding:20px;">
+                            <span class="result-container">
+                                    <p>{{item.name}}</p>
+                                    <img src="{% static '' %}{{item.filename}}" height="200px" class="rounded result-item">
+                                <form class="card result-card" action="/demo" method="get">
+                                    <div >
+                                        <input type="hidden" value="{{item.filename}}" name="image">
+                                        <input type='image' alt="Submit" class="card-img-top" src="{% static '' %}{{item.filename}}" >
+                                    </div>
+                                </form>
+                            </span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <footer class="page-footer border-top" style="box-shadow: -1px -0.5px 2px black">
+
+            <div class="footer-copyright bg-light text-muted text-center py-5">
+                <strong>© 2020 Copyright: iCode Inc.</strong>
+            </div>
+
+        </footer>
+        <script src="https://code.jquery.com/jquery.js"></script>
+        {% load static %}
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script src="{% static 'js/bootstrap.js'%}"></script>
+        <script src="{% static 'js/jquery-3.4.1.js'%}"></script>
+        <script src="{% static 'js/custom.js'%}"></script>
+
+    </body>
+
+</html>
