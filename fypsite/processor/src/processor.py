@@ -5,7 +5,7 @@ import sys
 import numpy as np
 from .htmlmapper import HtmlMapper
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe'
 
 
 def main(arg):
@@ -21,7 +21,7 @@ def main(arg):
     h = HtmlMapper()
 
     code = h.ImgToHtml(i, path, ocr_integration)
-    file = open(path + "webpages/" + "webpage.html", "w+")
+    file = open(path + "webpages/" + "webpage.html", "w+", encoding="utf-8")
     file.write(code)
     file.close()
     os.system("start \"\" " + path + "webpages/" + "webpage.html\"")
