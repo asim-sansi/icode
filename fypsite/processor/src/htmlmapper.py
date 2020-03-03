@@ -6,52 +6,82 @@ import numpy as np
 
 
 class HtmlMapper:
-    def g(self, image, webpage):
-        for e in webpage.getelements():
-            x, y, w, h = e.getAttributes()
-            cv2.rectangle(image, (x, y), (x + w, y + h), e.getColors()[0], -1)
-            cv2.rectangle(image, (x - 1, y - 1), (x + w + 2, y + h + 2), (0, 0, 0), 1)
-            cv2.rectangle(image, (x + 5, y + 5), (x + w - 5, y + h - 5), e.getColors()[1], -1)
-            for e1 in e.getSubElements():
-                x, y, w, h = e1.getAttributes()
-                cv2.rectangle(image, (x, y), (x + w, y + h), e1.getColors()[0], -1)
-                cv2.rectangle(image, (x - 1, y - 1), (x + w + 2, y + h + 2), (0, 0, 0), 1)
-                cv2.rectangle(image, (x + 5, y + 5), (x + w - 5, y + h - 5), e1.getColors()[1], -1)
-        cv2.imwrite("Label.png", image)
+    def __init__(self, classifier):
+        self.classifier = classifier;
 
-    def ImageToElements(self, parentElement, text):
-        image = parentElement.img
+    def remove_white(self, img):
+        # cv2_imshow(img)
+        h, w = img.shape[:2]
+        whitespace_found = True
+        white = np.array([255, 255, 255]);
+        # print(white)
+        while True:
+            h, w = img.shape[:2]
+            for i in range(w):
+                if np.array_equal(img[0][i], white) == False or np.array_equal(img[h - 1][i], white) == False:
+                    # print("True")
+                    whitespace_found = False
+            if whitespace_found == False:
+                break
+            else:
+                # print("removing white");
+                img = img[1:h - 2, 0:w]
+        whitespace_found = True
+        while True:
+            h, w = img.shape[:2]
+            # print(h,w)
+            for i in range(h):
+                if np.array_equal(img[i][0], white) == False or np.array_equal(img[i][w - 1], white) == False:
+                    whitespace_found = False
+            if whitespace_found == False:
+                return img
+            else:
+                # print("removing white");
+                img = img[0:h, 1:w - 2]
+        return img
+
+    def ImgToWebpage(self, image, text):
+
+        # Creating instance of Webpage Class
+        webpage = Webpage()
 
         # Storing height and width of image
         hhh, www = image.shape[:2]
 
         # Creating initial boundary around image
-        cv2.rectangle(image, (0, 0), (www, hhh), (255, 255, 255), www//150)
+        cv2.rectangle(image, (0, 0), (www, hhh), (255, 255, 255), 10)
 
         img = self.getBoundariesEnchanced(image.copy())
         img = self.EnhanceInnerSurface(img.copy(), image)
 
         # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         edged = cv2.Canny(img, 10, 20)
-        cv2.imshow("canny2nd", edged)
+        # cv2.imshow("canny2nd", edged)
         edged = img
-        (cnts, h) = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        #h[i] holds info for cnts[i]
-        #h[i][0] holds next child in same heiarchy
-        #h[i][1] holds previous child in same heiarchy
-        #h[i][2] holds first child in next heiarchy
-        #h[i][3] holds parent from previous heirarchy
+        (cnts, h) = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         idx = 0
-        for c in cnts:
+        parentElement = HTMLComponent(-1, -1, -1, -1, -1, 0, '')
+        for c, h1 in zip(cnts, h[0]):
             x, y, w, h = cv2.boundingRect(c)
             approx = cv2.approxPolyDP(c, 0.01 * cv2.arcLength(c, True), True)
             if w > 15 and h > 15:  # and len(approx)==4:# and x+w<700 and y+h<700:#15
                 idx += 1
                 new_img = image[y:y + h, x:x + w]
-                if text:  # and h < 50 and h1[2] == -1 and isText(new_img)):  # has no child
-                    element = TEXT(new_img, x, y, h, w, 0)
-                else:
-                    element = HTMLComponent(new_img, x, y, h, w, 0)
+                # if text:  # and h < 50 and h1[2] == -1 and isText(new_img)):  # has no child
+                #     element = TEXT(new_img, x, y, h, w, 0)
+                # else:
+                #     element = HTMLComponent(new_img, x, y, h, w, 0)
+                new_img = self.remove_white(new_img)
+                etype = self.classifier.Classify(new_img)
+
+                # -->asim sansi (edit)
+                # if(etype=="text"):
+                element = HTMLComponent(new_img, x, y, h, w, 0, etype, text)
+
+                # elif(etype=="button"):
+                #   element=Button(new_img,x,y,h,w,0)
+                # elif(etype=="textbox"):
+                #   element=TextBox(new_img,x,y,h,w,0)
 
                 element.set_shape(approx)
                 if h1[3] != -1:
@@ -64,66 +94,9 @@ class HtmlMapper:
                     parentElement = element;
                     webpage.addElement(element)
 
-
-    def ElementFromContour(self, text, image, c):
-        x, y, w, h = cv2.boundingRect(c)
-        approx = cv2.approxPolyDP(c, 0.01 * cv2.arcLength(c, True), True)
-        """w > 15 and h > 15"""
-        if 1:
-            new_img = image[y:y + h, x:x + w]
-            element = HTMLComponent(new_img, x, y, h, w, 0)
-
-            element.set_shape(approx)
-            return element
-        else:
-            return None
-
-    def ImgToWebpage(self, image, text):
-
-        # Creating instance of Webpage Class
-        webpage = Webpage()
-
-        # Storing height and width of image
-        hhh, www = image.shape[:2]
-
-        # Creating initial boundary around image
-        cv2.rectangle(image, (0, 0), (www, hhh), (255, 255, 255), www//150)
-
-        img = self.getBoundariesEnchanced(image.copy())
-        img = self.EnhanceInnerSurface(img.copy(), image)
-
-        # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        edged = cv2.Canny(img, 10, 20)
-        cv2.imshow("canny2nd", edged)
-        edged = img
-        (cnts, h) = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        parentElement = HTMLComponent(image, -1, -1, -1, -1, 0)
-        webpage.addElement(parentElement)
-        idx = 0
-        for c, h1 in zip(cnts, h[0]):
-            element = self.ElementFromContour(text, image, c)
-            webpage.addElement(element)
-            idx += 1
-        idx = 1
-        for h1 in h[0]:
-            if h1[3] == -1:
-                parentElement.AddSubElement(webpage.elements[idx])
-            else:
-                webpage.elements[h1[3]].AddSubElement(webpage.elements[idx])
-            idx += 1
-
-
-        # element_array = webpage.elements.copy()
-        # for element in element_array:
-        #     if element.w < 15 and element.h < 15:
-        #         for sub in element.sub:
-        #             webpage.elements.remove(sub)
-        #         webpage.elements.remove(element)
-        #     else:
-        #         print(element.sub)
         # cv2.imshow('final', minus_img)
         # cv2.waitKey()
-        self.g(image.copy(), webpage)
+        # self.g(image.copy(), webpage)
         return webpage
 
     def MapHtml(self, webpage, path):
@@ -131,20 +104,30 @@ class HtmlMapper:
         index = 0
         save_path = path + "images/"  # path provided for saving images
         access_path = "../images/"  # path provided to webpage for later access
-
         for e in webpage.getelements():
             imname = str(index) + ".png"
             cv2.imwrite(save_path + imname, e.getImage())
             e.setPath(access_path + imname)
-            code += e.Code()
-            x, y, w, h = e.getAttributes()
-            for (i, e1) in enumerate(e.getSubElements()):
-                imname2 = str(index) + "-" + str(i) + ".png"
-                cv2.imwrite(save_path + imname2, e1.getImage())
-                # x1,y1,w1,h1=e1.getAttributes()
-                e1.setPath(access_path + imname2)
-                code += e1.Code();
 
+            x, y, w, h = e.getAttributes()
+            if (len(e.getSubElements()) > 0):
+                code += e.StartTag();
+                for (i, e1) in enumerate(e.getSubElements()):
+                    if (e.tag == "ul"):
+                        code += "<li>"
+                    imname2 = str(index) + "-" + str(i) + ".png"
+                    cv2.imwrite(save_path + imname2, e1.getImage())
+                    # x1,y1,w1,h1=e1.getAttributes()
+                    e1.setPath(access_path + imname2)
+                    code += e1.Code();
+                    if (e.tag == "ul"):
+                        code += "</li>"
+                code += e.CloseTag();
+            else:
+                code += e.Code()
+                # code+="<IMG STYLE=\"position:absolute; TOP:"+str(y1)+"px;LEFT:"+str(x1)+"px; WIDTH:"+str(w1)+"px; HEIGHT:"+str(h1)+"px\" SRC=\""+path1+"\">"
+
+            # code+="<IMG STYLE=\"position:absolute; TOP:"+str(y)+"px;LEFT:"+str(x)+"px; WIDTH:"+str(w)+"px; HEIGHT:"+str(h)+"px\" SRC=\""+ipath+"\">"
             index += 1
 
         return code
@@ -188,7 +171,7 @@ class HtmlMapper:
 
         w = self.ImgToWebpage(image, text)
         s = self.MapHtml(w, path)
-        return s
+        return s;
 
     def EnhanceInnerSurface(self, img, omg):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -196,8 +179,8 @@ class HtmlMapper:
 
         rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (12, 3))
         dilation = cv2.dilate(thresh1, rect_kernel, iterations=1)
-        cv2.imshow("otsu", thresh1);
-        cv2.imshow("dilation", dilation);
+        # cv2.imshow("otsu", thresh1);
+        # cv2.imshow("dilation", dilation);
         #         cv2.waitKey();
         contours, hierarchy = cv2.findContours(dilation, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         im2 = omg.copy()

@@ -8,8 +8,8 @@ pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tessera
 
 
 class HTMLComponent:
-    def __init__(self, img, x, y, h, w, cnt):
-        self.tag = "div"
+    def __init__(self, img, x, y, h, w, cnt, type, text=0):
+        self.tag = type
         self.value = ""
         self.img = img
         # noinspection PyDictCreation
@@ -19,9 +19,9 @@ class HTMLComponent:
         self.styles['width'] = str(w) + "px"
         self.styles['height'] = str(h) + "px"
         self.styles['display'] = "block"
-        self.styles['position'] = "absolute"
-        self.styles['text-align'] = "center"
-        self.styles['border'] = "solid black 1px"
+        self.styles['position'] = "fixed"
+        # self.styles['text-align'] = "center"
+        # self.styles['border'] = "solid black 1px"
         self.styles['color'] = "rgb(0, 0, 0)"
         self.styles['background-color'] = "rgb(255, 255, 255)"
         self.styles['font-size'] = "16px"
@@ -36,7 +36,10 @@ class HTMLComponent:
         self.cnt = cnt
         self.path = ""
         self.sub = []  # sub elements
+        self.innerHTML = ""
         self.setDominantColor()
+        if (self.tag == 'a' or self.tag == 'button'):
+            self.getInnerHTML(text)
 
     def setImage(self, img):
         self.img = img
@@ -44,9 +47,22 @@ class HTMLComponent:
     def getStyle(self):
         return self.styles
 
+    def getInnerHTML(self, ocr=1):
+        s = pytesseract.image_to_string(self.img);
+        if (ocr == 0):
+            self.innerHTML = self.getRandomText(len(s))
+        else:
+            self.innerHTML = s
+
     def setCoordinates(self, x, y):
         self.x = x
         self.y = y
+
+    def getRandomText(self, n):
+        text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec pretium mauris enim, at congue lacus accumsan at. Integer vel suscipit neque. Integer eu dolor in mi consequat tincidunt sed non augue. Nullam condimentum mi tempus leo maximus, vel bibendum odio tempor. Nunc convallis dignissim ex, a aliquam orci commodo non. Integer lacinia fringilla est ut mollis. Aenean dignissim metus eget augue pulvinar, ac vulputate nisl mattis. Ut non elementum dolor. Aliquam dictum finibus gravida. Quisque elementum mauris felis, ac facilisis enim porta ac.";
+        while (n > len(text)):
+            text *= 2
+        return text[0:n]
 
     def AddSubElement(self, e):
         self.sub.append(e)
@@ -85,44 +101,45 @@ class HTMLComponent:
                 self.styles['color'] = "rgb" + str(max(my_colours, key=itemgetter(0))[1])
                 self.color = max(my_colours, key=itemgetter(0))[1];
             else:
-                self.styles['color'] = "rgb(255,255,255)"
+                self.styles['color'] = "white"
         else:
             self.styles['background-color'] = "red"
 
         return
 
     def set_shape(self, approx):
-        if len(approx) == 3:
-            # self.styles['shape'] = "triangle"
-            self.styles['border-radius'] = str(len(approx) * 0) + "px"
-        elif len(approx) == 4:
+        if len(approx) <= 5:
             # self.styles['shape'] = "rectangle"
             self.styles['border-radius'] = str(len(approx) * 0) + "px"
         else:
             # self.styles['shape'] = "round"
-            self.styles['border-radius'] = str(len(approx) * 5) + "px"
+            self.styles['border-radius'] = str(len(approx) * 3) + "px"
         return
 
-    def translate_text(self):
-        if self.styles['color'] == "rgb(255, 255, 255)":
-            self.img = cv2.bitwise_not(self.img)
-        #  cv2.imshow("h",self.img)
-        #   cv2.waitKey()
-        self.txt = (pytesseract.image_to_string(self.getImage()))
-        if len(self.txt) == 0:
-            return "<img src=" + self.path + ">"
-        return self.txt
 
-    def Code(self):
+    def StartTag(self):
         code = "<" + \
                self.tag + \
                " STYLE='"
         for key, value in self.styles.items():
             code += key + ": " + value + ";"
+        return code + "'>\n";
 
-        code += "'>"
-        code += self.translate_text()
-        if self.tag != 'input' and self.tag != 'img':
-            code += '</' + self.tag + '>\n'
+    def CloseTag(self):
+        if (self.tag.find("input") == -1 and self.tag.find("img") == -1):
+            return self.tag + "</" + self.tag + ">\n"
+        else:
+            return "\n"
 
+    def Code(self):
+        #      self.styles[]
+        code = "<" + \
+               self.tag + \
+               " STYLE='"
+        for key, value in self.styles.items():
+            code += key + ": " + value + ";"
+        if (self.tag.find("input") == -1 and self.tag.find("img") == -1):
+            code += "'>" + self.innerHTML + "</" + self.tag + ">\n"
+        else:
+            code += "'>"
         return code
