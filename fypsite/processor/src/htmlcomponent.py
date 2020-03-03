@@ -14,6 +14,8 @@ class HTMLComponent:
         self.img = img
         # noinspection PyDictCreation
         self.styles = {}
+        self.classes = []
+        self.parent = None
         self.styles['left'] = str(x) + "px"
         self.styles['top'] = str(y) + "px"
         self.styles['width'] = str(w) + "px"

@@ -171,7 +171,7 @@ class HtmlMapper:
 
         w = self.ImgToWebpage(image, text)
         s = self.MapHtml(w, path)
-        return s;
+        return s
 
     def EnhanceInnerSurface(self, img, omg):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
