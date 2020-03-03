@@ -5,7 +5,7 @@ import sys
 import numpy as np
 from .htmlmapper import HtmlMapper
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe'
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 
 def main(arg):
