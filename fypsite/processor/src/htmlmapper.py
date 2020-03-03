@@ -141,7 +141,7 @@ class HtmlMapper:
         # ret,edges = cv2.threshold(image.copy(), 0, 255,cv2.THRESH_OTSU|cv2.THRESH_BINARY_INV)
 
         # writing canny results to disk
-        cv2.imwrite("canny.png", edges)  # output file
+        cv2.imwrite("fypsite/processor/src/canny.png", edges)  # output file
         # ab = cv2.imread('canny.png')
         # ab = cv2.cvtColor(ab,cv2.COLOR_BGR2GRAY)
 
