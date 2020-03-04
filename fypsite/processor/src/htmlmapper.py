@@ -40,6 +40,51 @@ class HtmlMapper:
                 img = img[0:h, 1:w - 2]
         return img
 
+    # creates an element from an image
+    def element_from_image(self, text, image, c, parent):
+        x, y, w, h = cv2.boundingRect(c)
+        approx = cv2.approxPolyDP(c, 0.01 * cv2.arcLength(c, True), True)
+        """w > 15 and h > 15"""
+        if 1:
+            new_img = image[y:y + h, x:x + w]
+            element_type = self.classifier.Classify(new_img)
+            element = HTMLComponent(new_img, x, y, h, w, element_type, parent, text)
+            element.set_shape(approx)
+
+            return element
+        else:
+            return None
+
+
+    def image_to_elements(self, parentElement, text):
+        image = parentElement.img
+
+        # # Storing height and width of image
+        # i_height, i_width = image.shape[:2]
+        #
+        # # Creating initial boundary around image; thickness with respect to image width
+        # cv2.rectangle(image, (0, 0), (i_width, i_height), (255, 255, 255), i_width//150)
+
+        img = self.getBoundariesEnchanced(image.copy())
+        img = self.EnhanceInnerSurface(img.copy(), image)
+
+        edged = cv2.Canny(img, 10, 20)
+        cv2.imshow("canny2nd", edged)
+        edged = img
+        (contours, h) = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        #h[i] holds info for cnts[i]
+        #h[i][0] holds next child in same heiarchy
+        #h[i][1] holds previous child in same heiarchy
+        #h[i][2] holds first child in next heiarchy
+        #h[i][3] holds parent from previous heirarchy
+        idx = 0
+        for c in contours:
+            element = self.element_from_image(text, image, c)
+            element = self.image_to_elements(element, text)
+            parentElement.AddSubElement(element)
+        return parentElement
+
     def ImgToWebpage(self, image, text):
 
         # Creating instance of Webpage Class
@@ -49,55 +94,111 @@ class HtmlMapper:
         hhh, www = image.shape[:2]
 
         # Creating initial boundary around image
-        cv2.rectangle(image, (0, 0), (www, hhh), (255, 255, 255), 10)
+        cv2.rectangle(image, (0, 0), (www, hhh), (255, 255, 255), www//150)
 
         img = self.getBoundariesEnchanced(image.copy())
         img = self.EnhanceInnerSurface(img.copy(), image)
 
-        # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         edged = cv2.Canny(img, 10, 20)
-        # cv2.imshow("canny2nd", edged)
+        cv2.imshow("canny2nd", edged)
         edged = img
         (cnts, h) = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        parentElement = HTMLComponent(image, -1, -1, -1, -1, "body", 0)
+        webpage.addElement(parentElement)
         idx = 0
-        parentElement = HTMLComponent(-1, -1, -1, -1, -1, 0, '')
+        #h[i] holds info for cnts[i]
+        #h[i][0] holds next child in same heiarchy
+        #h[i][1] holds previous child in same heiarchy
+        #h[i][2] holds first child in next heiarchy
+        #h[i][3] holds parent from previous heirarchy
         for c, h1 in zip(cnts, h[0]):
-            x, y, w, h = cv2.boundingRect(c)
-            approx = cv2.approxPolyDP(c, 0.01 * cv2.arcLength(c, True), True)
-            if w > 15 and h > 15:  # and len(approx)==4:# and x+w<700 and y+h<700:#15
-                idx += 1
-                new_img = image[y:y + h, x:x + w]
-                # if text:  # and h < 50 and h1[2] == -1 and isText(new_img)):  # has no child
-                #     element = TEXT(new_img, x, y, h, w, 0)
-                # else:
-                #     element = HTMLComponent(new_img, x, y, h, w, 0)
-                new_img = self.remove_white(new_img)
-                etype = self.classifier.Classify(new_img)
+            element = self.element_from_image(text, image, c)
+            webpage.addElement(element)
+            idx += 1
+        idx = 1
+        for h1 in h[0]:
+            if h1[3] == -1:
+                parentElement.AddSubElement(webpage.elements[idx])
+            else:
+                webpage.elements[h1[3]].AddSubElement(webpage.elements[idx])
+            idx += 1
 
-                # -->asim sansi (edit)
-                # if(etype=="text"):
-                element = HTMLComponent(new_img, x, y, h, w, 0, etype, text)
-
-                # elif(etype=="button"):
-                #   element=Button(new_img,x,y,h,w,0)
-                # elif(etype=="textbox"):
-                #   element=TextBox(new_img,x,y,h,w,0)
-
-                element.set_shape(approx)
-                if h1[3] != -1:
-                    # if new image is less than 80% of parent image
-                    # pshape=parentElement.getImage().shape
-                    # newshape=new_img.shape
-                    # if(0.4*pshape[0]*pshape[1]>newshape[0]*newshape[1]):
-                    parentElement.AddSubElement(element)
-                else:
-                    parentElement = element;
-                    webpage.addElement(element)
-
-        # cv2.imshow('final', minus_img)
-        # cv2.waitKey()
-        # self.g(image.copy(), webpage)
         return webpage
+
+
+    #
+    # def ImgToWebpage(self, image, text):
+    #
+    #     # Creating instance of Webpage Class
+    #     webpage = Webpage()
+    #
+    #     # Storing height and width of image
+    #     hhh, www = image.shape[:2]
+    #
+    #     # Creating initial boundary around image
+    #     cv2.rectangle(image, (0, 0), (www, hhh), (255, 255, 255), 10)
+    #
+    #     img = self.getBoundariesEnchanced(image.copy())
+    #     img = self.EnhanceInnerSurface(img.copy(), image)
+    #
+    #     # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    #     edged = cv2.Canny(img, 10, 20)
+    #     # cv2.imshow("canny2nd", edged)
+    #     edged = img
+    #     (cnts, h) = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    #     idx = 0
+    #     parentElement = HTMLComponent(-1, -1, -1, -1, -1, 0, '')
+    #     for c, h1 in zip(cnts, h[0]):
+    #         x, y, w, h = cv2.boundingRect(c)
+    #         approx = cv2.approxPolyDP(c, 0.01 * cv2.arcLength(c, True), True)
+    #         if w > 15 and h > 15:  # and len(approx)==4:# and x+w<700 and y+h<700:#15
+    #             idx += 1
+    #             new_img = image[y:y + h, x:x + w]
+    #             # if text:  # and h < 50 and h1[2] == -1 and isText(new_img)):  # has no child
+    #             #     element = TEXT(new_img, x, y, h, w, 0)
+    #             # else:
+    #             #     element = HTMLComponent(new_img, x, y, h, w, 0)
+    #             new_img = self.remove_white(new_img)
+    #             etype = self.classifier.Classify(new_img)
+    #
+    #             # -->asim sansi (edit)
+    #             # if(etype=="text"):
+    #             element = HTMLComponent(new_img, x, y, h, w, 0, etype, text)
+    #
+    #             # elif(etype=="button"):
+    #             #   element=Button(new_img,x,y,h,w,0)
+    #             # elif(etype=="textbox"):
+    #             #   element=TextBox(new_img,x,y,h,w,0)
+    #
+    #             element.set_shape(approx)
+    #             if h1[3] != -1:
+    #                 # if new image is less than 80% of parent image
+    #                 # pshape=parentElement.getImage().shape
+    #                 # newshape=new_img.shape
+    #                 # if(0.4*pshape[0]*pshape[1]>newshape[0]*newshape[1]):
+    #                 parentElement.AddSubElement(element)
+    #             else:
+    #                 parentElement = element;
+    #                 webpage.addElement(element)
+    #
+    #     # cv2.imshow('final', minus_img)
+    #     # cv2.waitKey()
+    #     # self.g(image.copy(), webpage)
+    #     return webpage
+
+    def map_dom_tree(self, element, code, level=0):
+
+        code += '\t' *level
+        code += element.StartTag()
+        for item in element.sub:
+            code = self.map_dom_tree(item, code, level+1)
+        if len(element.sub) == 0:
+            code += '\t' * (level+1)
+            code += element.innerHTML + '\n'
+            code += '\t' * (level+1)
+        code = code[:len(code)-1]
+        code += element.CloseTag()
+        return code
 
     def MapHtml(self, webpage, path):
         code = ""
@@ -111,7 +212,7 @@ class HtmlMapper:
 
             x, y, w, h = e.getAttributes()
             if (len(e.getSubElements()) > 0):
-                code += e.StartTag();
+                code += e.StartTag()
                 for (i, e1) in enumerate(e.getSubElements()):
                     if (e.tag == "ul"):
                         code += "<li>"
@@ -125,9 +226,7 @@ class HtmlMapper:
                 code += e.CloseTag();
             else:
                 code += e.Code()
-                # code+="<IMG STYLE=\"position:absolute; TOP:"+str(y1)+"px;LEFT:"+str(x1)+"px; WIDTH:"+str(w1)+"px; HEIGHT:"+str(h1)+"px\" SRC=\""+path1+"\">"
 
-            # code+="<IMG STYLE=\"position:absolute; TOP:"+str(y)+"px;LEFT:"+str(x)+"px; WIDTH:"+str(w)+"px; HEIGHT:"+str(h)+"px\" SRC=\""+ipath+"\">"
             index += 1
 
         return code
@@ -169,8 +268,26 @@ class HtmlMapper:
     # Function accepts Image and returns HTML Code
     def ImgToHtml(self, image, path, text):
 
-        w = self.ImgToWebpage(image, text)
-        s = self.MapHtml(w, path)
+        # w = self.ImgToWebpage(image, text)
+        # s = self.MapHtml(w, path)
+        # Storing height and width of image
+        hhh, www = image.shape[:2]
+
+        # Creating initial boundary around image
+        cv2.rectangle(image, (0, 0), (www, hhh), (255, 255, 255), www//150)
+
+        img = self.getBoundariesEnchanced(image.copy())
+        img = self.EnhanceInnerSurface(img.copy(), image)
+
+        edged = cv2.Canny(img, 10, 20)
+        cv2.imshow("canny2nd", edged)
+        edged = img
+        parentElement = HTMLComponent(image, -1, -1, -1, -1, "body", None, 0)
+        parentElement.styles["padding"] = "0"
+        parentElement.styles["margin"] = "0"
+
+        parentElement = self.image_to_elements(parentElement, text)
+        s = self.map_dom_tree(parentElement, "")
         return s
 
     def EnhanceInnerSurface(self, img, omg):

@@ -8,14 +8,14 @@ pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tessera
 
 
 class HTMLComponent:
-    def __init__(self, img, x, y, h, w, cnt, type, text=0):
-        self.tag = type
+    def __init__(self, img, x, y, h, w, tag, parent=None, text=0):
+        self.tag = tag
         self.value = ""
         self.img = img
         # noinspection PyDictCreation
         self.styles = {}
         self.classes = []
-        self.parent = None
+        self.parent = parent
         self.styles['left'] = str(x) + "px"
         self.styles['top'] = str(y) + "px"
         self.styles['width'] = str(w) + "px"
@@ -35,7 +35,7 @@ class HTMLComponent:
         self.w = w
         self.bgcolor = (255, 255, 255)
         self.color = (0, 0, 0)
-        self.cnt = cnt
+        # self.cnt = cnt
         self.path = ""
         self.sub = []  # sub elements
         self.innerHTML = ""
@@ -61,8 +61,13 @@ class HTMLComponent:
         self.y = y
 
     def getRandomText(self, n):
-        text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec pretium mauris enim, at congue lacus accumsan at. Integer vel suscipit neque. Integer eu dolor in mi consequat tincidunt sed non augue. Nullam condimentum mi tempus leo maximus, vel bibendum odio tempor. Nunc convallis dignissim ex, a aliquam orci commodo non. Integer lacinia fringilla est ut mollis. Aenean dignissim metus eget augue pulvinar, ac vulputate nisl mattis. Ut non elementum dolor. Aliquam dictum finibus gravida. Quisque elementum mauris felis, ac facilisis enim porta ac.";
-        while (n > len(text)):
+        text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec pretium mauris enim, at congue lacus " \
+               "accumsan at. Integer vel suscipit neque. Integer eu dolor in mi consequat tincidunt sed non augue. " \
+               "Nullam condimentum mi tempus leo maximus, vel bibendum odio tempor. Nunc convallis dignissim ex, " \
+               "a aliquam orci commodo non. Integer lacinia fringilla est ut mollis. Aenean dignissim metus eget " \
+               "augue pulvinar, ac vulputate nisl mattis. Ut non elementum dolor. Aliquam dictum finibus gravida. " \
+               "Quisque elementum mauris felis, ac facilisis enim porta ac.";
+        while n > len(text):
             text *= 2
         return text[0:n]
 
@@ -124,12 +129,12 @@ class HTMLComponent:
                self.tag + \
                " STYLE='"
         for key, value in self.styles.items():
-            code += key + ": " + value + ";"
+            code += key + ": " + str(value) + ";"
         return code + "'>\n";
 
     def CloseTag(self):
-        if (self.tag.find("input") == -1 and self.tag.find("img") == -1):
-            return self.tag + "</" + self.tag + ">\n"
+        if self.tag.find("input") == -1 and self.tag.find("img") == -1:
+            return "</" + self.tag + ">\n"
         else:
             return "\n"
 
@@ -137,11 +142,13 @@ class HTMLComponent:
         #      self.styles[]
         code = "<" + \
                self.tag + \
-               " STYLE='"
+               " style='"
         for key, value in self.styles.items():
             code += key + ": " + value + ";"
         if (self.tag.find("input") == -1 and self.tag.find("img") == -1):
             code += "'>" + self.innerHTML + "</" + self.tag + ">\n"
+        elif self.tag.find("img") != -1:
+            code += "' src='../images/default_image.png'>"
         else:
             code += "'>"
         return code

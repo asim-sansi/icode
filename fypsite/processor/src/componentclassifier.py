@@ -2,8 +2,10 @@
 
 import cv2
 import numpy as np
+import tensorflow as tf
+# graph = tf.get_default_graph()
 
-folders = ['a href=\"\"', 'button', 'form', 'img', 'input type=\"text\"', 'ul']
+folders = ['a', 'button', 'form', 'img', "input type='text'", 'ul']
 #%%
 height=64
 width=64
@@ -33,7 +35,7 @@ class ComponentClassifier:
 
     # when working with a CNN: don't flatten the image, simply add the batch dimension
     image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
-
+    # with graph.as_default():
     preds = self.model.predict(image)
 
     # find the class label index with the largest corresponding probability
