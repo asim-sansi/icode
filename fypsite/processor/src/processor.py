@@ -9,6 +9,7 @@ from .componentclassifier import ComponentClassifier
 from .htmlmapper import HtmlMapper
 from keras.models import load_model
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+loaded_model = load_model("C:\\Users\i1602\Desktop\iCode\\fypsite\processor\CNN_model\CNNmodel")
 
 
 #
@@ -49,7 +50,6 @@ def main(arg):
     i = cv2.cvtColor(np.array(arg[0]), cv2.COLOR_BGR2RGB) #cv2.COLOR_BGR2RxGB
 
     # HTML Mapper Instantiated
-    loaded_model = load_model("C:\\Users\\i1602\\Desktop\\iCode\\fypsite\processor\CNN_model\CNNmodel")
     c = ComponentClassifier(loaded_model)
     h = HtmlMapper(c)
     # print(type(i[0][0]))

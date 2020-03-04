@@ -31,7 +31,7 @@ class HTMLComponent:
         #     self.styles['font-size'] = str(h) + "px"
         self.styles['white-space'] = "nowrap"
         self.styles['font-family'] = "Arial, Helvetica, sans-serif"
-        self.styles['padding'] = "0%"
+        # self.styles['padding'] = "0%"
         self.x = x
         self.y = y
         self.h = h
@@ -47,6 +47,8 @@ class HTMLComponent:
             self.innerHTML = self.get_inner_html(text)
         elif self.attributes['tag'] == "input" and self.attributes['type'] == "text":
             self.attributes['placeholder'] = self.get_inner_html(text)
+            self.styles['color'] = "#111"
+
 
     def setImage(self, img):
         self.img = img
@@ -115,7 +117,7 @@ class HTMLComponent:
             else:
                 self.styles['color'] = "white"
         else:
-            self.styles['background-color'] = "red"
+            self.styles['background-color'] = "white"
 
         return
 

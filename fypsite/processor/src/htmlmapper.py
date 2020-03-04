@@ -50,6 +50,8 @@ class HtmlMapper:
         if w > 15 and h > 15:
             new_img = image[y:y + h, x:x + w]
             element_type = self.classifier.Classify(new_img)
+            if parent.attributes['tag'] == "input" and element_type['tag'] == 'a':
+                return 0
             element = HTMLComponent(new_img, x, y, h, w, element_type, parent, text)
             element.set_shape(approx)
 
@@ -88,9 +90,18 @@ class HtmlMapper:
         for c in contours:
             element = self.element_from_contour(text, image, c, parentElement)
             if element != 0:
-                if element.attributes['tag'] != "button" and element.attributes['tag'] != "a" and element.attributes['tag'] != "input":
+                if element.attributes['tag'] not in ["button", "a", "img"]:
                     element = self.image_to_elements(element, text)
+                    if element.attributes['tag'] == "input":
+                        sub_tags = [child.attributes['tag'] for child in element.sub]
+                        print(sub_tags)
+                        if "input" in sub_tags:
+                            element.attributes['tag'] = "div"
+                        else:
+                            element.sub.clear()
+
                 parentElement.AddSubElement(element)
+
         return parentElement
 
     def ImgToWebpage(self, image, text):
