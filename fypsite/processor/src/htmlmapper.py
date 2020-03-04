@@ -71,7 +71,7 @@ class HtmlMapper:
                 #     element = TEXT(new_img, x, y, h, w, 0)
                 # else:
                 #     element = HTMLComponent(new_img, x, y, h, w, 0)
-                new_img = self.remove_white(new_img)
+#                new_img = self.remove_white(new_img)
                 etype = self.classifier.Classify(new_img)
 
                 # -->asim sansi (edit)
