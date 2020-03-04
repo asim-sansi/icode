@@ -8,12 +8,12 @@ pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tessera
 
 
 class HTMLComponent:
-    def __init__(self, img, x, y, h, w, tag, parent=None, text=0):
-        self.tag = tag
+    def __init__(self, img, x, y, h, w, attributes, parent=None, text=0):
         self.value = ""
         self.img = img
         # noinspection PyDictCreation
         self.styles = {}
+        self.attributes = attributes
         self.classes = []
         self.parent = parent
         self.styles['left'] = str(x) + "px"
@@ -21,12 +21,15 @@ class HTMLComponent:
         self.styles['width'] = str(w) + "px"
         self.styles['height'] = str(h) + "px"
         self.styles['display'] = "block"
-        self.styles['position'] = "fixed"
+        self.styles['position'] = "absolute"
         # self.styles['text-align'] = "center"
         # self.styles['border'] = "solid black 1px"
         self.styles['color'] = "rgb(0, 0, 0)"
         self.styles['background-color'] = "rgb(255, 255, 255)"
-        self.styles['font-size'] = "16px"
+        self.styles['font-size'] = "12px"
+        # if self.attributes['tag'] == 'a':
+        #     self.styles['font-size'] = str(h) + "px"
+        self.styles['white-space'] = "nowrap"
         self.styles['font-family'] = "Arial, Helvetica, sans-serif"
         self.styles['padding'] = "0%"
         self.x = x
@@ -40,8 +43,10 @@ class HTMLComponent:
         self.sub = []  # sub elements
         self.innerHTML = ""
         self.setDominantColor()
-        if (self.tag == 'a' or self.tag == 'button'):
-            self.getInnerHTML(text)
+        if self.attributes['tag'] == 'a' or self.attributes['tag'] == 'button':
+            self.innerHTML = self.get_inner_html(text)
+        elif self.attributes['tag'] == "input" and self.attributes['type'] == "text":
+            self.attributes['placeholder'] = self.get_inner_html(text)
 
     def setImage(self, img):
         self.img = img
@@ -49,12 +54,12 @@ class HTMLComponent:
     def getStyle(self):
         return self.styles
 
-    def getInnerHTML(self, ocr=1):
+    def get_inner_html(self, ocr=1):
         s = pytesseract.image_to_string(self.img);
         if (ocr == 0):
-            self.innerHTML = self.getRandomText(len(s))
+            return self.getRandomText(len(s))
         else:
-            self.innerHTML = s
+            return s
 
     def setCoordinates(self, x, y):
         self.x = x
@@ -125,29 +130,34 @@ class HTMLComponent:
 
 
     def StartTag(self):
-        code = "<" + \
-               self.tag + \
-               " STYLE='"
+        code = "<"
+        for key, value in self.attributes.items():
+            if key == "tag":
+                code += value + " "
+            else:
+                code += key + "='" + value + "' "
+
+        code += "STYLE='"
         for key, value in self.styles.items():
             code += key + ": " + str(value) + ";"
         return code + "'>\n";
 
     def CloseTag(self):
-        if self.tag.find("input") == -1 and self.tag.find("img") == -1:
-            return "</" + self.tag + ">\n"
+        if self.attributes['tag'] != "input" and self.attributes['tag'] != "img":
+            return "</" + self.attributes['tag'] + ">\n"
         else:
             return "\n"
 
     def Code(self):
         #      self.styles[]
         code = "<" + \
-               self.tag + \
+               self.attributes['tag'] + \
                " style='"
         for key, value in self.styles.items():
             code += key + ": " + value + ";"
-        if (self.tag.find("input") == -1 and self.tag.find("img") == -1):
-            code += "'>" + self.innerHTML + "</" + self.tag + ">\n"
-        elif self.tag.find("img") != -1:
+        if self.attributes['tag'] != "input" and self.attributes['tag'] != "img":
+            code += "'>" + self.innerHTML + "</" + self.attributes['tag'] + ">\n"
+        elif self.attributes['tag'] == 'img':
             code += "' src='../images/default_image.png'>"
         else:
             code += "'>"

@@ -41,11 +41,13 @@ class HtmlMapper:
         return img
 
     # creates an element from an image
-    def element_from_image(self, text, image, c, parent):
+    def element_from_contour(self, text, image, c, parent):
         x, y, w, h = cv2.boundingRect(c)
+        if w == parent.w and h == parent.h:
+            return 0
         approx = cv2.approxPolyDP(c, 0.01 * cv2.arcLength(c, True), True)
         """w > 15 and h > 15"""
-        if 1:
+        if w > 15 and h > 15:
             new_img = image[y:y + h, x:x + w]
             element_type = self.classifier.Classify(new_img)
             element = HTMLComponent(new_img, x, y, h, w, element_type, parent, text)
@@ -53,24 +55,27 @@ class HtmlMapper:
 
             return element
         else:
-            return None
+            return 0
 
 
     def image_to_elements(self, parentElement, text):
         image = parentElement.img
+        # Storing height and width of image
+        hhh, www = image.shape[:2]
 
-        # # Storing height and width of image
-        # i_height, i_width = image.shape[:2]
-        #
-        # # Creating initial boundary around image; thickness with respect to image width
-        # cv2.rectangle(image, (0, 0), (i_width, i_height), (255, 255, 255), i_width//150)
+        if parentElement.attributes['tag'] == "body":
+            # Creating initial boundary around image
+            cv2.rectangle(image, (0, 0), (www, hhh), (255, 255, 255), www // 150)
 
         img = self.getBoundariesEnchanced(image.copy())
         img = self.EnhanceInnerSurface(img.copy(), image)
 
-        edged = cv2.Canny(img, 10, 20)
-        cv2.imshow("canny2nd", edged)
-        edged = img
+        edged = cv2.Canny(img.copy(), 10, 20)
+        # cv2.imshow("canny2nd", edged)
+        # edged = img
+        # cv2.imshow("", img)
+        # cv2.waitKey()
+
         (contours, h) = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         #h[i] holds info for cnts[i]
@@ -79,10 +84,13 @@ class HtmlMapper:
         #h[i][2] holds first child in next heiarchy
         #h[i][3] holds parent from previous heirarchy
         idx = 0
+        print(len(contours))
         for c in contours:
-            element = self.element_from_image(text, image, c)
-            element = self.image_to_elements(element, text)
-            parentElement.AddSubElement(element)
+            element = self.element_from_contour(text, image, c, parentElement)
+            if element != 0:
+                if element.attributes['tag'] != "button" and element.attributes['tag'] != "a" and element.attributes['tag'] != "input":
+                    element = self.image_to_elements(element, text)
+                parentElement.AddSubElement(element)
         return parentElement
 
     def ImgToWebpage(self, image, text):
@@ -102,6 +110,7 @@ class HtmlMapper:
         edged = cv2.Canny(img, 10, 20)
         cv2.imshow("canny2nd", edged)
         edged = img
+
         (cnts, h) = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         parentElement = HTMLComponent(image, -1, -1, -1, -1, "body", 0)
         webpage.addElement(parentElement)
@@ -112,7 +121,7 @@ class HtmlMapper:
         #h[i][2] holds first child in next heiarchy
         #h[i][3] holds parent from previous heirarchy
         for c, h1 in zip(cnts, h[0]):
-            element = self.element_from_image(text, image, c)
+            element = self.element_from_contour(text, image, c)
             webpage.addElement(element)
             idx += 1
         idx = 1
@@ -186,12 +195,17 @@ class HtmlMapper:
     #     # self.g(image.copy(), webpage)
     #     return webpage
 
-    def map_dom_tree(self, element, code, level=0):
-
+    def map_dom_tree(self, element, code, path, level=0):
+        save_path = path + "images/"  # path provided for saving images
+        access_path = "../images/"  # path provided to webpage for later access
+        imname = str(element.x) + '-' + str(element.y) + ".png"
+        cv2.imwrite(save_path + imname, element.getImage())
+        if(element.attributes['tag'] == 'img'):
+            element.attributes['src'] = access_path + imname
         code += '\t' *level
         code += element.StartTag()
         for item in element.sub:
-            code = self.map_dom_tree(item, code, level+1)
+            code = self.map_dom_tree(item, code, path, level+1)
         if len(element.sub) == 0:
             code += '\t' * (level+1)
             code += element.innerHTML + '\n'
@@ -233,7 +247,6 @@ class HtmlMapper:
 
     def getBoundariesEnchanced(self, img):
         # image = cv2.cvtColor(img.copy(), cv2.COLOR_BGR2GRAY)  # Not Being Used
-
         edges = cv2.Canny(img.copy(), 10, 20)
         # cv2.imshow("canny", edges)
         #         cv2.waitKey();
@@ -253,6 +266,9 @@ class HtmlMapper:
         #     box = np.int0(box)
         #     img = cv2.drawContours(img, [box], 0, (0,255,0), 3)
 
+        if hierarchy is None:
+            return img
+
         for cnt, h1 in zip(contours, hierarchy[0]):
             # epsilon = 0.01*cv2.arcLength(cnt, True)
             # approx = cv2.approxPolyDP(cnt, epsilon, True)
@@ -270,24 +286,14 @@ class HtmlMapper:
 
         # w = self.ImgToWebpage(image, text)
         # s = self.MapHtml(w, path)
-        # Storing height and width of image
-        hhh, www = image.shape[:2]
 
-        # Creating initial boundary around image
-        cv2.rectangle(image, (0, 0), (www, hhh), (255, 255, 255), www//150)
-
-        img = self.getBoundariesEnchanced(image.copy())
-        img = self.EnhanceInnerSurface(img.copy(), image)
-
-        edged = cv2.Canny(img, 10, 20)
-        cv2.imshow("canny2nd", edged)
-        edged = img
-        parentElement = HTMLComponent(image, -1, -1, -1, -1, "body", None, 0)
+        parentElement = HTMLComponent(image, -1, -1, -1, -1, {"tag": "body"}, None, text)
         parentElement.styles["padding"] = "0"
         parentElement.styles["margin"] = "0"
+        # parentElement.styles["font-size"] = "13px"
 
         parentElement = self.image_to_elements(parentElement, text)
-        s = self.map_dom_tree(parentElement, "")
+        s = self.map_dom_tree(parentElement, "", path, 0)
         return s
 
     def EnhanceInnerSurface(self, img, omg):
