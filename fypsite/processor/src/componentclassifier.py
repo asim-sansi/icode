@@ -3,9 +3,9 @@
 import cv2
 import numpy as np
 import tensorflow as tf
-# graph = tf.get_default_graph()
+graph = tf.get_default_graph()
 
-folders = ['a', 'button', 'form', 'img', "input type='text'", 'ul']
+folders = ['a', 'button', 'form', 'img', 'input type=\"text\"', 'ul']
 #%%
 height=64
 width=64
@@ -13,7 +13,6 @@ class ComponentClassifier:
   def __init__(self,model):
     self.model=model
   def Classify(self,image):
-    # cv2_imshow(image)
 #     # img1=cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
 #     img1= cv2.resize(img1, (height, width))
 #     img1= img1[...,::-1].astype(np.float32)
@@ -35,8 +34,10 @@ class ComponentClassifier:
 
     # when working with a CNN: don't flatten the image, simply add the batch dimension
     image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
-    # with graph.as_default():
-    preds = self.model.predict(image)
+
+    with graph.as_default():
+      preds = self.model.predict(image)
+
 
     # find the class label index with the largest corresponding probability
     #i = preds.argmax(axis=1)[0]
@@ -46,6 +47,7 @@ class ComponentClassifier:
     labels = np.argmax(probas, axis=-1)
     # print('******  '+folders[labels[0]]+'  ********')
     answer = folders[labels[0]]
+    print(answer)
 
     # if(answer==0):
     #   answer="button"
@@ -54,6 +56,9 @@ class ComponentClassifier:
     # if(answer==2):
     #   answer="text"
     # print(answer)
+
+
+    #clearing previous session for CNN
     return answer
 
 
