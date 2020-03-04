@@ -7,27 +7,12 @@ graph = tf.get_default_graph()
 
 folders = [{'tag': 'a'}, {'tag': 'button'}, {'tag': 'form'}, {'tag': 'img'}, {'tag': 'input', 'type': 'text'}, {'tag': 'ul'}]
 
-
-#%%
-height=64
-width=64
+height = 64
+width = 64
 class ComponentClassifier:
-  def __init__(self,model):
-    self.model=model
+  def __init__(self, model):
+    self.model = model
   def Classify(self,image):
-#     # img1=cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-#     img1= cv2.resize(img1, (height, width))
-#     img1= img1[...,::-1].astype(np.float32)
-# #    img1 = img1.img_to_array(img1)
-#     img1 = img1/255
-#     #img1=img1.reshape(height,width,1)
-#     img1=img1.reshape(1,-1)
-#     #img1=np.array([img1])
-#     print(img1.shape)
-#     answer=(self.model.predict(img1)[0])
-    #print(answer)
-
-
 
     #asim sansi edit
     image = cv2.resize(image, (width, height))
@@ -41,27 +26,9 @@ class ComponentClassifier:
       preds = self.model.predict(image)
 
 
-    # find the class label index with the largest corresponding probability
-    #i = preds.argmax(axis=1)[0]
-    #label = lb.classes_[i]
-    print(preds)
     probas = np.array(preds)
     labels = np.argmax(probas, axis=-1)
-    # print('******  '+folders[labels[0]]+'  ********')
     answer = folders[labels[0]]
     print(answer)
 
-    # if(answer==0):
-    #   answer="button"
-    # if(answer==1):
-    #   answer="textbox"
-    # if(answer==2):
-    #   answer="text"
-    # print(answer)
-
-
-    #clearing previous session for CNN
-    return answer
-
-
-#%%
+    return answer.copy()
