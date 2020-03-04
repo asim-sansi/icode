@@ -9,6 +9,7 @@ from .componentclassifier import ComponentClassifier
 from .htmlmapper import HtmlMapper
 from keras.models import load_model
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe'
+loaded_model = load_model("A:\SEMESTER_6\Software_Engineering\icode\\fypsite\processor\CNN_model\CNNmodel")
 
 
 #
@@ -39,7 +40,6 @@ def main(arg):
     # flush()
     # COMMENTED CODE LIMIT END###########
     # loaded_model = pickle.load(open("fypsite/processor/CNN_model/first_CNN_model", 'rb'))
-    loaded_model = load_model("A:\SEMESTER_6\Software_Engineering\icode\\fypsite\processor\CNN_model\CNNmodel")
     ocr_integration = arg[1]  # set true to use OCR
 
     path = "../generated_resources/"
@@ -53,6 +53,7 @@ def main(arg):
     c = ComponentClassifier(loaded_model)
     h = HtmlMapper(c)
     # print(type(i[0][0]))
+
 
     code = h.ImgToHtml(i, path, ocr_integration)
     file = open(path + "webpages/" + "webpage.html", "w+", encoding="utf-8")
