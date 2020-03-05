@@ -9,7 +9,7 @@ from .componentclassifier import ComponentClassifier
 from .htmlmapper import HtmlMapper
 from keras.models import load_model
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe'
-loaded_model = load_model("A:\SEMESTER_6\Software_Engineering\icode\\fypsite\processor\CNN_model\CNNmodel")
+loaded_model = load_model("A:\SEMESTER_6\Software_Engineering\icode\\fypsite\processor\CNN_model\\third_CNN_model")
 
 
 #

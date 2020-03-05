@@ -9,7 +9,7 @@ from selenium.common import exceptions
 driver = webdriver.Firefox()
 
 ''' URL's '''
-file = open("urls.txt", "r")
+file = open("A:\FYP\script\\urls.txt", "r")
 urls = file.readlines()
 
 p = 0
@@ -19,10 +19,8 @@ for k in urls:
         driver.get(k)
         driver.maximize_window()
 
-        HTML_Elements = ["a", "button", "footer", "form", "frame", "header", "h1", "h2", "h3",
-                         "h4", "h5", "h6", "iframe", "img", "input", "ul", "li", "nav", "ol", "p",
-                         "table", "textarea"]
-        # notice = driver.find_element_by_xpath("//a[@class='s-btn s-btn__muted s-btn__icon js-notice-close']")
+        HTML_Elements = ["p"]
+        # notice = driver.find_element_by_xpath ("//a[@class='s-btn s-btn__muted s-btn__icon js-notice-close']")
         # notice.click()
 
         for j in HTML_Elements:
@@ -38,7 +36,7 @@ for k in urls:
                         type = '/' + str(i.get_attribute("type"))
                     if (i.rect['width'] != 0 and i.rect['height'] != 0):
                         i.screenshot(
-                            "data/" + j + type + "/bla" + str(p) + "-" + str(i.rect['x']) + "-" + str(i.rect['y']) + "-"
+                            "A:\FYP\script\data\\" + j + type + "\\bla" + str(p) + "-" + str(i.rect['x']) + "-" + str(i.rect['y']) + "-"
                             + str(i.rect['width']) + "-" + str(i.rect['height']) + ".png")
                         p += 1
                         type = ""

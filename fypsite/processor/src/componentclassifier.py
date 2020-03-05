@@ -5,7 +5,22 @@ import numpy as np
 import tensorflow as tf
 graph = tf.get_default_graph()
 
-folders = [{'tag': 'a'}, {'tag': 'button'}, {'tag': 'form'}, {'tag': 'img'}, {'tag': 'input', 'type': 'text'}, {'tag': 'ul'}]
+#1st CNN model
+# folders = [{'tag': 'a'}, {'tag': 'button'}, {'tag': 'form'}, {'tag': 'img'},
+#            {'tag': 'input', 'type': 'text'},
+#            {'tag': 'ul'}]
+
+#2nd CNN model
+# folders = [{'tag': 'a'}, {'tag': 'button'}, {'tag': 'form'},{'tag': 'i'}, {'tag': 'img'},
+#            {'tag': 'input', 'type': 'checkbox'}, {'tag': 'input', 'type': 'radio'},
+#            {'tag': 'input', 'type': 'text'}, {'tag': 'p'},
+#            {'tag': 'ul'}]
+
+#3rd CNN model
+folders = [{'tag': 'a'}, {'tag': 'button'}, {'tag': 'form'}, {'tag': 'i'}, {'tag': 'img'},
+           {'tag': 'input', 'type': 'text'}, {'tag': 'p'},
+           {'tag': 'ul'}]
+
 
 height = 64
 width = 64
