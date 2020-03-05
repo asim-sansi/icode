@@ -8,5 +8,9 @@ urlpatterns = [path('', views.index, name="index"),
                path('aboutus/', views.show_aboutus, name="aboutus"),
                path('contactus/', views.show_contactus, name="contactus"),
                path('demo/startprocess/', views.initiate, name="initiate"),
+               path('demo/trackprocess/', views.trackProcess, name="track"),
+               path('demo/viewpage/', views.viewPage, name="viewpage"),
+               path('demo/viewcode/', views.viewCode, name="viewcode"),
+               path('demo/download/', views.download, name="download"),
                # default view call for this app
                ]

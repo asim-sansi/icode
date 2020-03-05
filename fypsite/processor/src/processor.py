@@ -8,29 +8,10 @@ import numpy as np
 from .componentclassifier import ComponentClassifier
 from .htmlmapper import HtmlMapper
 from keras.models import load_model
+import threading
+
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 loaded_model = load_model("C:\\Users\i1602\Desktop\iCode\\fypsite\processor\CNN_model\CNNmodel")
-
-
-#
-# def main(arg):
-#     ocr_integration = arg[1]  # set true to use OCR
-#
-#     path = "../generated_resources/"
-#
-#     # Path of image used to instantiate image object
-#     img_name = "../processor/"  # path of image
-#     i = cv2.cvtColor(np.array(arg[0]), cv2.COLOR_BGR2RGB)
-#
-#     # HTML Mapper Instantiated
-#     h = HtmlMapper()
-#
-#     code = h.ImgToHtml(i, path, ocr_integration)
-#     file = open(path + "webpages/" + "webpage.html", "w+", encoding="utf-8")
-#     file.write(code)
-#     file.close()
-#     os.system("start \"\" " + path + "webpages/" + "webpage.html\"")
-#     cv2.waitKey()
 
 
 def main(arg):
@@ -39,26 +20,27 @@ def main(arg):
     # imgname=arg[1]
     # flush()
     # COMMENTED CODE LIMIT END###########
-    # loaded_model = pickle.load(open("fypsite/processor/CNN_model/first_CNN_model", 'rb'))
-    ocr_integration = arg[1]  # set true to use OCR
 
+    # arg[1]['comm-channel'] = comm_channel
     path = "../generated_resources/"
-    # p = "../generated_resources/webpages/"
+    another_path = "processor/static/generated_resources/"
 
     # Path of image used to instantiate image object
     img_name = "../processor/"  # path of image
     i = cv2.cvtColor(np.array(arg[0]), cv2.COLOR_BGR2RGB) #cv2.COLOR_BGR2RxGB
 
     # HTML Mapper Instantiated
-    c = ComponentClassifier(loaded_model)
-    h = HtmlMapper(c)
+    cc = ComponentClassifier(loaded_model)
+    h = HtmlMapper(cc)
     # print(type(i[0][0]))
 
-
-    code = h.ImgToHtml(i, path, ocr_integration)
+    arg[1]['comm-channel'].put(2)
+    code = h.ImgToHtml(i, path, arg[1])
     file = open(path + "webpages/" + "webpage.html", "w+", encoding="utf-8")
     file.write(code)
+    file = open(another_path + "webpage.html", "w+", encoding="utf-8")
+    file.write(code)
     file.close()
-    os.system("start \"\" " + path + "webpages/" + "webpage.html\"")
-    exit()
+    arg[1]['comm-channel'].put(100)
+    return 1
     # cv2.waitKey()

@@ -60,7 +60,7 @@ class HtmlMapper:
             return 0
 
 
-    def image_to_elements(self, parentElement, text):
+    def image_to_elements(self, parentElement, options):
         image = parentElement.img
         # Storing height and width of image
         hhh, www = image.shape[:2]
@@ -88,10 +88,13 @@ class HtmlMapper:
         idx = 0
         print(len(contours))
         for c in contours:
-            element = self.element_from_contour(text, image, c, parentElement)
+            if parentElement.attributes['tag'] == "body":
+                idx += 1
+                options['comm-channel'].put(10 + int((idx/len(contours))*65))
+            element = self.element_from_contour(options['text-type'], image, c, parentElement)
             if element != 0:
                 if element.attributes['tag'] not in ["button", "a", "img"]:
-                    element = self.image_to_elements(element, text)
+                    element = self.image_to_elements(element, options)
                     if element.attributes['tag'] == "input":
                         sub_tags = [child.attributes['tag'] for child in element.sub]
                         print(sub_tags)
@@ -206,17 +209,25 @@ class HtmlMapper:
     #     # self.g(image.copy(), webpage)
     #     return webpage
 
-    def map_dom_tree(self, element, code, path, level=0):
+    def map_dom_tree(self, element, code, path, options, level=0):
+        another_path = "processor/static/generated_resources/images/"
         save_path = path + "images/"  # path provided for saving images
-        access_path = "../images/"  # path provided to webpage for later access
+        access_path = "images/"  # path provided to webpage for later access
         imname = str(element.x) + '-' + str(element.y) + ".png"
         cv2.imwrite(save_path + imname, element.getImage())
-        if(element.attributes['tag'] == 'img'):
+        cv2.imwrite(another_path + imname, element.getImage())
+        if options['image-type'] == 0:
+            imname = "default_image.png"
+        if element.attributes['tag'] == 'img':
             element.attributes['src'] = access_path + imname
         code += '\t' *level
         code += element.StartTag()
+        idx = 0
         for item in element.sub:
-            code = self.map_dom_tree(item, code, path, level+1)
+            code = self.map_dom_tree(item, code, path, options, level+1)
+            if level == 0:
+                idx += 1
+                options['comm-channel'].put(75 + int((idx/len(element.sub))*20))
         if len(element.sub) == 0:
             code += '\t' * (level+1)
             code += element.innerHTML + '\n'
@@ -293,18 +304,20 @@ class HtmlMapper:
         return img
 
     # Function accepts Image and returns HTML Code
-    def ImgToHtml(self, image, path, text):
+    def ImgToHtml(self, image, path, options):
 
         # w = self.ImgToWebpage(image, text)
         # s = self.MapHtml(w, path)
 
-        parentElement = HTMLComponent(image, -1, -1, -1, -1, {"tag": "body"}, None, text)
+        parentElement = HTMLComponent(image, -1, -1, -1, -1, {"tag": "body"}, None, options['text-type'])
         parentElement.styles["padding"] = "0"
         parentElement.styles["margin"] = "0"
         # parentElement.styles["font-size"] = "13px"
 
-        parentElement = self.image_to_elements(parentElement, text)
-        s = self.map_dom_tree(parentElement, "", path, 0)
+        options['comm-channel'].put(4)
+        parentElement = self.image_to_elements(parentElement, options)
+        options['comm-channel'].put(75)
+        s = self.map_dom_tree(parentElement, "", path, options, 0)
         return s
 
     def EnhanceInnerSurface(self, img, omg):

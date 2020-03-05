@@ -58,10 +58,12 @@ class HTMLComponent:
 
     def get_inner_html(self, ocr=1):
         s = pytesseract.image_to_string(self.img);
-        if (ocr == 0):
+        if ocr == 0:
             return self.getRandomText(len(s))
-        else:
+        elif ocr == 1:
             return s
+        else:
+            return "{" + self.attributes['tag'] + "}"
 
     def setCoordinates(self, x, y):
         self.x = x

@@ -29,11 +29,14 @@
                         url:"./startprocess/",
                         data:{
                             imageData : imgData,
-                            getText : $('#Check1').prop("checked")
+                            textType : $("input[name=text-type]:checked").val(),
+                            imageType : $("input[name=image-type]:checked").val()
                         },// multiple data sent using ajax
                         dataType: "json",
                         success: function (response) {
                           alert(response['data']);
+                          trackTranslation();
+                          return;
                         },
                         error: function(){
                           alert("Something went wrong while processing image.\nTry again in a while.");
@@ -41,5 +44,67 @@
                         }
                     });
                 }
+
+            }
+
+            function trackTranslation(){
+                var complete = 0;
+                $('#progress-bar').parent().css("background", "#222");
+                $('#result-nav').css("display", "none");
+                const intervalLength = 100;
+                const interval = setInterval(() => {
+                    $.ajax({
+                        url:"./trackprocess/",
+                        dataType: "json",
+                        success: function (response) {
+                            console.log(response['progress'])
+                            if(response['progress'] == 100){
+                                complete = 100;
+                                document.getElementById("progress-bar").style.width = complete.toString() + "%";
+                                document.getElementById("progress-bar").innerText = complete.toString() + "%";
+                                $('#result-nav').css("display", "inline-flex");
+                                clearInterval(interval);
+                            }
+                            else if (response['progress'] >= 0){
+                                complete = response['progress']
+                                document.getElementById("progress-bar").style.width = complete.toString() + "%";
+                                document.getElementById("progress-bar").innerText = complete.toString() + "%";
+                            }
+                        },
+                        error: function(){
+
+                            return;
+                        }
+                    });
+                }, intervalLength);
+
+            }
+
+            function viewpage(){
+                $.ajax({
+                    url:"./viewpage/",
+                    dataType: "json",
+                    success: function (response) {
+                        console.log["progress"]
+                        return;
+                    },
+                    error: function(){
+                        return;
+                    }
+                });
+            }
+            
+            function downloadfile(){
+                // $.ajax({
+                //     url:"./download/",
+                //     dataType: "json",
+                //     success: function (response) {
+                //         return;
+                //     },
+                //     error: function(){
+                //         return;
+                //     }
+                // });
+                $("body").append('<iframe src="./download/" style="display: none;" ></iframe>');
 
             }

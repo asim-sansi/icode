@@ -56,14 +56,25 @@
                     </div>
                     <img id="view_image" style="max-width:100%; max-height:200px;" src="{% static '' %}{{image}}" alt="No Image Selected" />
                     {% if image != '' %}
-                        <button id="initiate" class="btn btn-outline-primary btn-block" onclick="beginTranslation()" style="margin-top: 5%;">
-                            Go!
-                        </button>
+                    <button id="initiate" class="btn btn-outline-primary btn-block" onclick="beginTranslation()" style="margin-top: 5%;">
+                        Go!
+                    </button>
                     {% else %}
-                        <button id="initiate" class="btn btn-outline-primary btn-block disabled" onclick="beginTranslation()" style="margin-top: 5%; cursor: not-allowed;">
-                            Go!
-                        </button>
+                    <button id="initiate" class="btn btn-outline-primary btn-block disabled" onclick="beginTranslation()" style="margin-top: 5%; cursor: not-allowed;">
+                        Go!
+                    </button>
                     {% endif %}
+                    <br>
+                    <div class="progress" style="background: transparent;">
+                        <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <br>
+                    <div id="result-nav" style="display:none" class="btn-group btn-block" role="group" aria-label="Basic example">
+                        <a onclick="viewpage()" type="button" class="btn btn-primary btn-lg text-white">View Page</a>
+                        <a target="_blank" href="/demo/viewcode" type="button" class="btn btn-primary btn-lg">View Code</a>
+                        <a onclick="downloadfile()" type="button" class="btn btn-success btn-lg text-white">Download</a>
+                    </div>
+
                 </div>
                 <div class="col-lg-4 col-md-6 col-12">
 
@@ -89,16 +100,44 @@
                         <div class="card card-body">
                             <ul class="list-group list-group-flush">
                                 <li class="list-group-item">
-                                    <input type="checkbox" class="form-check-input" id="Check1">
-                                    <label class="form-check-label" for="Check1">Include Translated Text</label>
+                                    <p class="h5">Inner Text Type</p>
                                 </li>
                                 <li class="list-group-item">
-                                    <input type="checkbox" class="form-check-input" id="Check2">
-                                    <label class="form-check-label" for="Check2">Option 2</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="text-type" value="1" checked>
+                                        <label class="form-check-label">
+                                            OCR's Text as Text (for debugging only)
+                                        </label>
+                                      </div>
+                                      <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="text-type" value="0">
+                                        <label class="form-check-label">
+                                            Random Text as Text
+                                        </label>
+                                      </div>
+                                      <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="text-type" value="2">
+                                        <label class="form-check-label">
+                                            Element Type as Text
+                                        </label>
+                                      </div>
                                 </li>
                                 <li class="list-group-item">
-                                    <input type="checkbox" class="form-check-input" id="Check3">
-                                    <label class="form-check-label" for="Check3">Option 3</label>
+                                    <p class="h5">Image Type</p>
+                                </li>
+                                <li class="list-group-item">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="image-type" value="1" checked>
+                                        <label class="form-check-label">
+                                            Original Image (for debugging only)
+                                        </label>
+                                      </div>
+                                      <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="image-type" value="0">
+                                        <label class="form-check-label">
+                                            Placeholder Image
+                                        </label>
+                                      </div>
                                 </li>
                             </ul>
                         </div>
@@ -115,6 +154,11 @@
         <script src="{% static 'js/bootstrap.js'%}"></script>
         <script src="{% static 'js/jquery-3.4.1.js'%}"></script>
         <script src="{% static 'js/custom.js'%}"></script>
+        <script>
+            if("{{image}}" != ""){
+                img.src = "../static/"+"{{image}}";
+            }
+        </script>
 
     </body>
 
