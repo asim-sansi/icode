@@ -27,6 +27,7 @@ class HTMLComponent:
         self.styles['color'] = "rgb(0, 0, 0)"
         self.styles['background-color'] = "rgb(255, 255, 255)"
         self.styles['font-size'] = "12px"
+        self.styles['white-space'] = "nowrap"
         # if self.attributes['tag'] == 'a':
         #     self.styles['font-size'] = str(h) + "px"
         self.styles['font-family'] = "Arial, Helvetica, sans-serif"
@@ -44,6 +45,9 @@ class HTMLComponent:
         self.setDominantColor()
         if self.attributes['tag'] in ['a', 'button', 'p']:
             self.innerHTML = self.get_inner_html(text)
+            if self.attributes['tag'] == "a":
+                self.attributes['href'] = ""
+                self.styles['text-decoration'] = "none"
             if self.attributes['tag'] == "p":
                 self.styles['white-space'] = "wrap"
                 self.styles['color'] = 'black'

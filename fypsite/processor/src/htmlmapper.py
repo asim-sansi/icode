@@ -53,7 +53,8 @@ class HtmlMapper:
             if parent.attributes['tag'] == "input" and element_type['tag'] == 'a':
                 return 0
             element = HTMLComponent(new_img, x, y, h, w, element_type, parent, text)
-            element.set_shape(approx)
+            if element.attributes['tag'] != "i":
+                element.set_shape(approx)
 
             return element
         else:
@@ -104,7 +105,7 @@ class HtmlMapper:
 
                     if element.attributes['tag'] == 'form':
                         sub_tags = [child.attributes['tag'] for child in element.sub]
-                        if 'form' in sub_tags and len(element.sub) > 1:
+                        if 'form' in sub_tags:
                             element.attributes['tag'] = "div"
                             element.sub = [item for item in element.sub if item.attributes['tag'] == 'form']
 
