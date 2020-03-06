@@ -52,6 +52,8 @@ class HtmlMapper:
             element_type = self.classifier.Classify(new_img)
             if parent.attributes['tag'] == "input" and element_type['tag'] == 'a':
                 return 0
+            if parent.attributes['tag'] == 'form' and parent.attributes['tag'] == element_type['tag']:
+                return 0
             element = HTMLComponent(new_img, x, y, h, w, element_type, parent, text)
             element.set_shape(approx)
 
@@ -93,12 +95,11 @@ class HtmlMapper:
                 options['comm-channel'].put(10 + int((idx/len(contours))*65))
             element = self.element_from_contour(options['text-type'], image, c, parentElement)
             if element != 0:
-                if element.attributes['tag'] not in ["button", "a", "img"]:
+                if element.attributes['tag'] not in ["button", "a", "img", "p", "i"]:
                     element = self.image_to_elements(element, options)
-                    if element.attributes['tag'] == "input":
+                    if element.attributes['tag'] in ["input", "button"]:
                         sub_tags = [child.attributes['tag'] for child in element.sub]
-                        print(sub_tags)
-                        if "input" in sub_tags:
+                        if element.attributes['tag'] in sub_tags and len(element.sub)>1:
                             element.attributes['tag'] = "div"
                         else:
                             element.sub.clear()
@@ -210,16 +211,18 @@ class HtmlMapper:
     #     return webpage
 
     def map_dom_tree(self, element, code, path, options, level=0):
-        another_path = "processor/static/generated_resources/images/"
+        another_path = "processor/static/generated_resources/"
         save_path = path + "images/"  # path provided for saving images
         access_path = "images/"  # path provided to webpage for later access
         imname = str(element.x) + '-' + str(element.y) + ".png"
         cv2.imwrite(save_path + imname, element.getImage())
-        cv2.imwrite(another_path + imname, element.getImage())
+        cv2.imwrite(another_path + "images/" + imname, element.getImage())
         if options['image-type'] == 0:
             imname = "default_image.png"
         if element.attributes['tag'] == 'img':
             element.attributes['src'] = access_path + imname
+        if element.attributes['tag'] == 'i':
+            element.styles['background'] = "url(" + access_path + imname + ")"
         code += '\t' *level
         code += element.StartTag()
         idx = 0

@@ -11,7 +11,7 @@ from keras.models import load_model
 import threading
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-loaded_model = load_model("C:\\Users\i1602\Desktop\iCode\\fypsite\processor\CNN_model\\first_CNN_model")
+loaded_model = load_model("C:\\Users\i1602\Desktop\iCode\\fypsite\processor\CNN_model\\third_CNN_model")
 
 
 def main(arg):
