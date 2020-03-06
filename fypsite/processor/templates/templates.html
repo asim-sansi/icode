@@ -49,11 +49,11 @@
                         <div class="col-md-6 col-12 text-center" style="padding:20px;">
                             <span class="result-container">
                                     <p>{{item.name}}</p>
-                                    <img src="{% static '' %}{{item.filename}}" height="200px" class="rounded result-item img-fluid" style="max-width: 80%;">
+                                    <img src="{% static '' %}{{item.filename}}" class="rounded result-item img-fluid" style="height: 250px; max-width: 80%;">
                                 <form class="card result-card" action="/demo" method="get">
                                     <div>
                                         <input type="hidden" value="{{item.filename}}" name="image">
-                                        <input type='image' alt="Submit" class="card-img-top" src="{% static '' %}{{item.filename}}" style="max-height: 200 px" >
+                                        <input type='image' alt="Submit" class="card-img-top" src="{% static '' %}{{item.filename}}" style="max-height: 200 px; width: 100%;" >
                                     </div>
                                 </form>
                             </span>

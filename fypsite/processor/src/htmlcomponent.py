@@ -29,7 +29,6 @@ class HTMLComponent:
         self.styles['font-size'] = "12px"
         # if self.attributes['tag'] == 'a':
         #     self.styles['font-size'] = str(h) + "px"
-        self.styles['white-space'] = "nowrap"
         self.styles['font-family'] = "Arial, Helvetica, sans-serif"
         # self.styles['padding'] = "0%"
         self.x = x
@@ -43,10 +42,15 @@ class HTMLComponent:
         self.sub = []  # sub elements
         self.innerHTML = ""
         self.setDominantColor()
-        if self.attributes['tag'] == 'a' or self.attributes['tag'] == 'button':
+        if self.attributes['tag'] in ['a', 'button', 'p']:
             self.innerHTML = self.get_inner_html(text)
+            if self.attributes['tag'] == "p":
+                self.styles['white-space'] = "wrap"
+                self.styles['color'] = 'black'
         elif self.attributes['tag'] == "input" and self.attributes['type'] == "text":
             self.attributes['placeholder'] = self.get_inner_html(text)
+            if(self.attributes['placeholder'] in ["Password", "password", "ssword", "pass"]):
+                self.attributes['type'] = "password"
             self.styles['color'] = "#111"
 
 
@@ -58,10 +62,12 @@ class HTMLComponent:
 
     def get_inner_html(self, ocr=1):
         s = pytesseract.image_to_string(self.img);
-        if (ocr == 0):
+        if ocr == 0:
             return self.getRandomText(len(s))
-        else:
+        elif ocr == 1:
             return s
+        else:
+            return "{" + self.attributes['tag'] + "}"
 
     def setCoordinates(self, x, y):
         self.x = x

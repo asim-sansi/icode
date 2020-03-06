@@ -3,15 +3,18 @@
 # from django.http import HttpResponseRedirect
 import base64
 import io
-
-
-import threading
+import os
+from queue import Queue
+from django.conf import settings
+from zipfile import ZipFile
 from PIL import Image
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse, HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from .models import Template
 from .src import processor as engine
+
+comm_channel = Queue()
 
 
 def index(request):
@@ -60,13 +63,56 @@ def initiate(request):
     # handler.write(image_data)
     # handler.close()
 
-    process_thread = threading.Thread(target=process_function, args=[request, [image, request.POST['getText']]])
+    dict = {
+        "comm-channel": comm_channel,
+        "text-type": int(request.POST["textType"]),
+        "image-type": int(request.POST["imageType"]),
+        "use_defaults": ""
+    }
+    process_thread = engine.threading.Thread(target=process_function, args=[request, [image, dict]])
     process_thread.start()
-    return JsonResponse({"data": "Your query is being processed and will open in a new tab shortly"})
 
+    return JsonResponse({"data": "Your query is being processed and will be ready shortly"})
+
+@csrf_exempt
+def trackProcess(request):
+    if comm_channel.empty() == False:
+        return JsonResponse({"progress": comm_channel.get()})
+    else:
+        return JsonResponse({"progress": -1})
+
+def viewCode(request):
+    data = ""
+    file = open('../generated_resources/webpages/webpage.html', 'r')
+    data = file.readlines()
+    data = ''.join(data)
+
+    return render(request, "viewcode.html", {"data": data})
+
+def viewPage(request):
+    # return render(request, "webpage.html")
+    file_path = os.path.join(settings.BASE_DIR, "processor/static/generated_resources/webpage.html")
+    os.system("start \"\" " + file_path)
+    return JsonResponse({"progress": -1})
+
+@csrf_exempt
+def download(request):
+    file_path = os.path.join(settings.BASE_DIR, "processor/static/generated_resources/")
+    # # create a ZipFile object
+    # zipObj = ZipFile(file_path + 'page.zip', 'w')
+    #
+    # # Add multiple files to the zip
+    # zipObj.write(file_path + "webpage.html")
+    #
+    # zipObj.write(file_path + "default_image.png")
+    # # close the Zip File
+    # zipObj.close()
+    file = open(file_path + "webpage.html")
+    res = HttpResponse(file)
+    res['Content-Disposition'] = 'attachment; filename=page.html'
+    return res
 
 def process_function(request, some_args):
     # do some stuff
     engine.main(some_args)
-    # render(some_args[0])
     # continue doing stuff
