@@ -52,8 +52,6 @@ class HtmlMapper:
             element_type = self.classifier.Classify(new_img)
             if parent.attributes['tag'] == "input" and element_type['tag'] == 'a':
                 return 0
-            if parent.attributes['tag'] == 'form' and parent.attributes['tag'] == element_type['tag']:
-                return 0
             element = HTMLComponent(new_img, x, y, h, w, element_type, parent, text)
             element.set_shape(approx)
 
@@ -103,6 +101,13 @@ class HtmlMapper:
                             element.attributes['tag'] = "div"
                         else:
                             element.sub.clear()
+
+                    if element.attributes['tag'] == 'form':
+                        sub_tags = [child.attributes['tag'] for child in element.sub]
+                        if 'form' in sub_tags and len(element.sub) > 1:
+                            element.attributes['tag'] = "div"
+                            element.sub = [item for item in element.sub if item.attributes['tag'] == 'form']
+
 
                 parentElement.AddSubElement(element)
 
