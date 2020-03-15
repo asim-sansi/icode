@@ -3,7 +3,7 @@ import cv2
 from operator import itemgetter
 from PIL import Image
 import pytesseract
-
+from collections import Counter
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 
@@ -26,7 +26,8 @@ class HTMLComponent:
         # self.styles['border'] = "solid black 1px"
         self.styles['color'] = "rgb(0, 0, 0)"
         self.styles['background-color'] = "rgb(255, 255, 255)"
-        self.styles['font-size'] = "12px"
+        #self.styles['font-size'] = "12px"
+        self.styles['font-size']=str(self.getFontSize())+"px"
         self.styles['white-space'] = "nowrap"
         # if self.attributes['tag'] == 'a':
         #     self.styles['font-size'] = str(h) + "px"
@@ -49,7 +50,7 @@ class HTMLComponent:
                 self.attributes['href'] = ""
                 self.styles['text-decoration'] = "none"
             if self.attributes['tag'] == "p":
-                self.styles['white-space'] = "wrap"
+                self.styles['white-space'] = "normal"
                 self.styles['color'] = 'black'
         elif self.attributes['tag'] == "input" and self.attributes['type'] == "text":
             self.attributes['placeholder'] = self.get_inner_html(text)
@@ -61,6 +62,19 @@ class HTMLComponent:
     def setImage(self, img):
         self.img = img
 
+    def getFontSize(self):
+        boxes = pytesseract.image_to_boxes(self.img)
+        line = boxes.split("\n")
+        sizes=[]
+        for l1 in line:
+            l = l1.split(' ')
+            if (len(l) > 4 and (l[0]>='A' and l[0]<='Z')):
+                sizes.append(int(l[4]) - int(l[2])+2)
+        if(len(sizes)>0):
+            c=Counter(sizes)
+            return (c.most_common(1)[0][0])
+            #return sum(sizes)/len(sizes)
+        return 12;
     def getStyle(self):
         return self.styles
 

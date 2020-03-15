@@ -15,7 +15,8 @@ class HtmlMapper:
         whitespace_found = True
         white = np.array([255, 255, 255]);
         # print(white)
-        while True:
+        h, w = img.shape[:2]
+        while h>1 and w>1:
             h, w = img.shape[:2]
             for i in range(w):
                 if np.array_equal(img[0][i], white) == False or np.array_equal(img[h - 1][i], white) == False:
@@ -25,9 +26,9 @@ class HtmlMapper:
                 break
             else:
                 # print("removing white");
-                img = img[1:h - 2, 0:w]
+                img = img[1:h - 1, 0:w]
         whitespace_found = True
-        while True:
+        while h>1 and w>1:
             h, w = img.shape[:2]
             # print(h,w)
             for i in range(h):
@@ -37,7 +38,7 @@ class HtmlMapper:
                 return img
             else:
                 # print("removing white");
-                img = img[0:h, 1:w - 2]
+                img = img[0:h, 1:w - 1]
         return img
 
     # creates an element from an image
@@ -49,9 +50,12 @@ class HtmlMapper:
         """w > 15 and h > 15"""
         if w > 15 and h > 15:
             new_img = image[y:y + h, x:x + w]
+            new_img=self.remove_white(new_img.copy())
             element_type = self.classifier.Classify(new_img)
-            if parent.attributes['tag'] == "input" and element_type['tag'] == 'a':
-                return 0
+            # cv2.imshow(element_type,new_img)#showing image with label for debugging
+            # cv2.waitKey()
+            # if parent.attributes['tag'] == "input" and element_type == 'a':
+            #     return 0
             element = HTMLComponent(new_img, x, y, h, w, element_type, parent, text)
             if element.attributes['tag'] != "i":
                 element.set_shape(approx)
@@ -65,11 +69,16 @@ class HtmlMapper:
         image = parentElement.img
         # Storing height and width of image
         hhh, www = image.shape[:2]
-
+        img=image.copy()
         if parentElement.attributes['tag'] == "body":
             # Creating initial boundary around image
             cv2.rectangle(image, (0, 0), (www, hhh), (255, 255, 255), www // 150)
-
+        #
+        # kernel_sharpening = np.array([[-1, -1, -1],
+        #                               [-1, 9, -1],
+        #                               [-1, -1,
+        #                                -1]])  # applying the sharpening kernel to the input image & displaying it.
+        # img = cv2.filter2D(img, -1, kernel_sharpening)
         img = self.getBoundariesEnchanced(image.copy())
         img = self.EnhanceInnerSurface(img.copy(), image)
 
@@ -98,6 +107,7 @@ class HtmlMapper:
                     element = self.image_to_elements(element, options)
                     if element.attributes['tag'] in ["input", "button"]:
                         sub_tags = [child.attributes['tag'] for child in element.sub]
+                        #make div if found same tag nested
                         if element.attributes['tag'] in sub_tags and len(element.sub)>1:
                             element.attributes['tag'] = "div"
                         else:
@@ -220,7 +230,7 @@ class HtmlMapper:
         another_path = "processor/static/generated_resources/"
         save_path = path + "images/"  # path provided for saving images
         access_path = "images/"  # path provided to webpage for later access
-        imname = str(element.x) + '-' + str(element.y) + ".png"
+        imname = str(element.x) + '-' + str(element.y) + element.attributes['tag']+".png"
         cv2.imwrite(save_path + imname, element.getImage())
         cv2.imwrite(another_path + "images/" + imname, element.getImage())
         if options['image-type'] == 0:
@@ -306,7 +316,7 @@ class HtmlMapper:
             x, y, w, h = cv2.boundingRect(cnt)
             # if w>10 and h>10:# and h1[3]!=-1:# and w<width and h<height:
             # if(h<20 or w<20):
-            cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 1)
+            cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
             # img[y:y+h,x:x+w]=255
             # img = cv2.drawContours(img, [approx], 0, (0,255,0),1)
         cv2.imwrite("canny.png", img)
@@ -338,7 +348,7 @@ class HtmlMapper:
         # cv2.imshow("otsu", thresh1);
         # cv2.imshow("dilation", dilation);
         #         cv2.waitKey();
-        contours, hierarchy = cv2.findContours(dilation, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours, hierarchy = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         im2 = omg.copy()
         # print(type(contours))
         # return;
