@@ -8,14 +8,17 @@ pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tessera
 
 
 class HTMLComponent:
-    def __init__(self, img, x, y, h, w, attributes, parent=None, text=0):
+    def __init__(self, img, x, y, h, w, attributes,id,parent=None, text=0):
         self.value = ""
         self.img = img
+        self.id=str(attributes['tag'])+str(id)
         # noinspection PyDictCreation
         self.styles = {}
         self.attributes = attributes
         self.classes = []
         self.parent = parent
+        w = img.shape[1]
+        h = img.shape[0]
         self.styles['left'] = str(x) + "px"
         self.styles['top'] = str(y) + "px"
         self.styles['width'] = str(w) + "px"
@@ -24,6 +27,7 @@ class HTMLComponent:
         self.styles['position'] = "absolute"
         # self.styles['text-align'] = "center"
         # self.styles['border'] = "solid black 1px"
+        self.styles['border-width']="1px"
         self.styles['color'] = "rgb(0, 0, 0)"
         self.styles['background-color'] = "rgb(255, 255, 255)"
         #self.styles['font-size'] = "12px"
@@ -44,6 +48,7 @@ class HTMLComponent:
         self.sub = []  # sub elements
         self.innerHTML = ""
         self.setDominantColor()
+        self.SetBorderColor()
         if self.attributes['tag'] in ['a', 'button', 'p']:
             self.innerHTML = self.get_inner_html(text)
             if self.attributes['tag'] == "a":
@@ -62,6 +67,17 @@ class HTMLComponent:
     def setImage(self, img):
         self.img = img
 
+    def SetBorderColor(self):
+        colors=[]
+        w = self.img.shape[1]
+        for i in range(w):
+            colors.append(self.img[0][i])
+        sum=np.array([0,0,0])
+        for i in range(len(colors)):
+            sum=np.add(colors[i],sum)
+        color=sum/len(colors)
+        self.styles['border-color']='rgb('+str(int(color[2]))+','+str(int(color[1]))+','+str(int(color[0]))+')'
+        return color
     def getFontSize(self):
         boxes = pytesseract.image_to_boxes(self.img)
         line = boxes.split("\n")
@@ -163,9 +179,9 @@ class HTMLComponent:
             else:
                 code += key + "='" + value + "' "
 
-        code += "STYLE='"
-        for key, value in self.styles.items():
-            code += key + ": " + str(value) + ";"
+        code+=" id='"+str(self.id)
+        # for key, value in self.styles.items():
+        #     code += key + ": " + str(value) + ";"
         return code + "'>\n";
 
     def CloseTag(self):
@@ -173,14 +189,19 @@ class HTMLComponent:
             return "</" + self.attributes['tag'] + ">\n"
         else:
             return "\n"
-
+    def getCSSCode(self):
+        code="#"+str(self.id)+"{\n"
+        for key, value in self.styles.items():
+            code += key + ": " + value + ";"+"\n"
+        code+="}\n"
+        return code
     def Code(self):
         #      self.styles[]
         code = "<" + \
                self.attributes['tag'] + \
-               " style='"
-        for key, value in self.styles.items():
-            code += key + ": " + value + ";"
+               " id='"+str(self.id)+"'"
+        # for key, value in self.styles.items():
+        #     code += key + ": " + value + ";"
         if self.attributes['tag'] != "input" and self.attributes['tag'] != "img":
             code += "'>" + self.innerHTML + "</" + self.attributes['tag'] + ">\n"
         elif self.attributes['tag'] == 'img':

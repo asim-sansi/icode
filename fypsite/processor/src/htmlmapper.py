@@ -8,6 +8,7 @@ import numpy as np
 class HtmlMapper:
     def __init__(self, classifier):
         self.classifier = classifier;
+        self.component_number=1
 
     def remove_white(self, img):
         # cv2_imshow(img)
@@ -27,6 +28,7 @@ class HtmlMapper:
             else:
                 # print("removing white");
                 img = img[1:h - 1, 0:w]
+                h, w = img.shape[:2]
         whitespace_found = True
         while h>1 and w>1:
             h, w = img.shape[:2]
@@ -39,7 +41,9 @@ class HtmlMapper:
             else:
                 # print("removing white");
                 img = img[0:h, 1:w - 1]
+                h, w = img.shape[:2]
         return img
+
 
     # creates an element from an image
     def element_from_contour(self, text, image, c, parent):
@@ -56,7 +60,8 @@ class HtmlMapper:
             # cv2.waitKey()
             # if parent.attributes['tag'] == "input" and element_type == 'a':
             #     return 0
-            element = HTMLComponent(new_img, x, y, h, w, element_type, parent, text)
+            element = HTMLComponent(new_img, x, y, h, w, element_type,self.component_number, parent, text)
+            self.component_number+=1
             if element.attributes['tag'] != "i":
                 element.set_shape(approx)
 
@@ -72,7 +77,8 @@ class HtmlMapper:
         img=image.copy()
         if parentElement.attributes['tag'] == "body":
             # Creating initial boundary around image
-            cv2.rectangle(image, (0, 0), (www, hhh), (255, 255, 255), www // 150)
+            #cv2.rectangle(image, (0, 0), (www, hhh), (255, 255, 255), www // 150)
+            image=cv2.copyMakeBorder(image,2,2,2,2,cv2.BORDER_CONSTANT)
         #
         # kernel_sharpening = np.array([[-1, -1, -1],
         #                               [-1, 9, -1],
@@ -143,7 +149,8 @@ class HtmlMapper:
         edged = img
 
         (cnts, h) = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        parentElement = HTMLComponent(image, -1, -1, -1, -1, "body", 0)
+        parentElement = HTMLComponent(image, -1, -1, -1, -1, "body",self.component_number, 0)
+        self.component_number+=1
         webpage.addElement(parentElement)
         idx = 0
         #h[i] holds info for cnts[i]
@@ -226,11 +233,12 @@ class HtmlMapper:
     #     # self.g(image.copy(), webpage)
     #     return webpage
 
-    def map_dom_tree(self, element, code, path, options, level=0):
+    def map_dom_tree(self, element, code, path, options,cssCode, level=0):
         another_path = "processor/static/generated_resources/"
         save_path = path + "images/"  # path provided for saving images
         access_path = "images/"  # path provided to webpage for later access
         imname = str(element.x) + '-' + str(element.y) + element.attributes['tag']+".png"
+        cssCode+=element.getCSSCode()
         cv2.imwrite(save_path + imname, element.getImage())
         cv2.imwrite(another_path + "images/" + imname, element.getImage())
         if options['image-type'] == 0:
@@ -243,7 +251,7 @@ class HtmlMapper:
         code += element.StartTag()
         idx = 0
         for item in element.sub:
-            code = self.map_dom_tree(item, code, path, options, level+1)
+            code,cssCode = self.map_dom_tree(item, code, path, options,cssCode, level+1)
             if level == 0:
                 idx += 1
                 options['comm-channel'].put(75 + int((idx/len(element.sub))*20))
@@ -253,7 +261,7 @@ class HtmlMapper:
             code += '\t' * (level+1)
         code = code[:len(code)-1]
         code += element.CloseTag()
-        return code
+        return code,cssCode
 
     def MapHtml(self, webpage, path):
         code = ""
@@ -322,22 +330,25 @@ class HtmlMapper:
         cv2.imwrite("canny.png", img)
         return img
 
+
     # Function accepts Image and returns HTML Code
+
     def ImgToHtml(self, image, path, options):
 
         # w = self.ImgToWebpage(image, text)
         # s = self.MapHtml(w, path)
 
-        parentElement = HTMLComponent(image, -1, -1, -1, -1, {"tag": "body"}, None, options['text-type'])
+        parentElement = HTMLComponent(image, -1, -1, -1, -1, {"tag": "body"},self.component_number, None, options['text-type'])
+        self.component_number+=1
         parentElement.styles["padding"] = "0"
         parentElement.styles["margin"] = "0"
         # parentElement.styles["font-size"] = "13px"
-
         options['comm-channel'].put(4)
         parentElement = self.image_to_elements(parentElement, options)
         options['comm-channel'].put(75)
-        s = self.map_dom_tree(parentElement, "", path, options, 0)
-        return s
+        s,css = self.map_dom_tree(parentElement, "", path, options,"", 0)
+        s="<head><link rel='stylesheet' href='styles.css'></head>"+s
+        return s,css
 
     def EnhanceInnerSurface(self, img, omg):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)

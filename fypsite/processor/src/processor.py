@@ -1,5 +1,5 @@
 import os
-
+from zipfile import ZipFile
 import pytesseract
 import cv2
 import sys
@@ -13,7 +13,11 @@ import threading
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 loaded_model = load_model(r"E:\ICode\icode\fypsite\processor\CNN_model\third_CNN_model")
 
-
+def getZipFile(another_path):
+    zipObj = ZipFile(another_path+'webpage.zip', 'w')
+    zipObj.write(another_path+"webpage.html","webpage.html");
+    zipObj.write(another_path + "styles.css","styles.css");
+    zipObj.close()
 def main(arg):
     # COMMENTED CODE#####################
     # p=arg[0]
@@ -33,14 +37,17 @@ def main(arg):
     cc = ComponentClassifier(loaded_model)
     h = HtmlMapper(cc)
     # print(type(i[0][0]))
-
     arg[1]['comm-channel'].put(2)
-    code = h.ImgToHtml(i, path, arg[1])
+    code,css = h.ImgToHtml(i, path, arg[1])
     file = open(path + "webpages/" + "webpage.html", "w+", encoding="utf-8")
     file.write(code)
     file = open(another_path + "webpage.html", "w+", encoding="utf-8")
     file.write(code)
     file.close()
+    file = open(another_path + "styles.css", "w+", encoding="utf-8")
+    file.write(css)
+    file.close()
+    getZipFile(another_path)
     arg[1]['comm-channel'].put(100)
     return 1
     # cv2.waitKey()
