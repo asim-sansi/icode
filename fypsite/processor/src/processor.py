@@ -4,7 +4,7 @@ import pytesseract
 import cv2
 import sys
 import numpy as np
-
+#CSS and HTML Separarted
 from .componentclassifier import ComponentClassifier
 from .htmlmapper import HtmlMapper
 from keras.models import load_model
