@@ -54,7 +54,7 @@ class HtmlMapper:
         """w > 15 and h > 15"""
         if w > 15 and h > 15:
             new_img = image[y:y + h, x:x + w]
-            new_img=self.remove_white(new_img.copy())
+            #new_img_c=self.remove_white(new_img.copy())
             element_type = self.classifier.Classify(new_img)
             # cv2.imshow(element_type,new_img)#showing image with label for debugging
             # cv2.waitKey()
@@ -77,8 +77,8 @@ class HtmlMapper:
         img=image.copy()
         if parentElement.attributes['tag'] == "body":
             # Creating initial boundary around image
-            #cv2.rectangle(image, (0, 0), (www, hhh), (255, 255, 255), www // 150)
-            image=cv2.copyMakeBorder(image,2,2,2,2,cv2.BORDER_CONSTANT)
+            cv2.rectangle(image, (0, 0), (www, hhh), (255, 255, 255), www // 150)
+            #image=cv2.copyMakeBorder(image,2,2,2,2,cv2.BORDER_CONSTANT)
         #
         # kernel_sharpening = np.array([[-1, -1, -1],
         #                               [-1, 9, -1],
@@ -347,7 +347,8 @@ class HtmlMapper:
         parentElement = self.image_to_elements(parentElement, options)
         options['comm-channel'].put(75)
         s,css = self.map_dom_tree(parentElement, "", path, options,"", 0)
-        s="<head><link rel='stylesheet' href='styles.css'></head>"+s
+        s="<head><link rel='stylesheet' href='styles.css'>" \
+          "<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css'></head>"+s
         return s,css
 
     def EnhanceInnerSurface(self, img, omg):

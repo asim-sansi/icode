@@ -13,6 +13,8 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from .models import Template
 from .src import processor as engine
+from wsgiref.util import FileWrapper
+
 
 comm_channel = Queue()
 
@@ -108,8 +110,9 @@ def download(request):
     # # close the Zip File
     # zipObj.close()
     file = open(file_path + "webpage.zip")
-    res = HttpResponse(file)
-    res['Content-Disposition'] = 'attachment; filename=page.html'
+    wrapper = FileWrapper(file)
+    res = FileResponse(wrapper,content_type='application/zip')
+    res['Content-Disposition'] = 'attachment; filename=page.zip'
     return res
 
 def process_function(request, some_args):

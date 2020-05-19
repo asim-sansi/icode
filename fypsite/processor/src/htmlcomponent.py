@@ -26,7 +26,7 @@ class HTMLComponent:
         self.styles['display'] = "block"
         self.styles['position'] = "absolute"
         # self.styles['text-align'] = "center"
-        # self.styles['border'] = "solid black 1px"
+        #self.styles['border'] = "solid"
         self.styles['border-width']="1px"
         self.styles['color'] = "rgb(0, 0, 0)"
         self.styles['background-color'] = "rgb(255, 255, 255)"
@@ -41,6 +41,7 @@ class HTMLComponent:
         self.y = y
         self.h = h
         self.w = w
+        self.setBSclass()
         self.bgcolor = (255, 255, 255)
         self.color = (0, 0, 0)
         # self.cnt = cnt
@@ -66,7 +67,11 @@ class HTMLComponent:
 
     def setImage(self, img):
         self.img = img
-
+    def setBSclass(self):
+        if(self.attributes['tag']=='button'):
+            self.attributes['class']='btn'
+        if (self.attributes['tag'] == 'input'):
+            self.attributes['class'] = 'form-control'
     def SetBorderColor(self):
         colors=[]
         w = self.img.shape[1]
@@ -76,6 +81,10 @@ class HTMLComponent:
         for i in range(len(colors)):
             sum=np.add(colors[i],sum)
         color=sum/len(colors)
+        if 255-color[0] >10 or 255-color[1]>10 or 255-color[2]>10:
+            color[0]-=40
+            color[1]-=40
+            color[2]-=40
         self.styles['border-color']='rgb('+str(int(color[2]))+','+str(int(color[1]))+','+str(int(color[0]))+')'
         return color
     def getFontSize(self):
