@@ -24,7 +24,7 @@ def main(arg):
     # imgname=arg[1]
     # flush()
     # COMMENTED CODE LIMIT END###########
-
+    print(arg)
     # arg[1]['comm-channel'] = comm_channel
     path = "../generated_resources/"
     another_path = "processor/static/generated_resources/"

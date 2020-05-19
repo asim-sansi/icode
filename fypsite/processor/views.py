@@ -107,7 +107,7 @@ def download(request):
     # zipObj.write(file_path + "default_image.png")
     # # close the Zip File
     # zipObj.close()
-    file = open(file_path + "webpage.html")
+    file = open(file_path + "webpage.zip")
     res = HttpResponse(file)
     res['Content-Disposition'] = 'attachment; filename=page.html'
     return res
