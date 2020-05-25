@@ -19,12 +19,12 @@ class HTMLComponent:
         self.parent = parent
         w = img.shape[1]
         h = img.shape[0]
-        self.styles['left'] = str(x) + "px"
-        self.styles['top'] = str(y) + "px"
-        self.styles['width'] = str(w) + "px"
-        self.styles['height'] = str(h) + "px"
-        self.styles['display'] = "block"
-        self.styles['position'] = "absolute"
+        # self.styles['left'] = str(x) + "px"
+        # self.styles['top'] = str(y) + "px"
+        # self.styles['width'] = str(w) + "px"
+        # self.styles['height'] = str(h) + "px"
+        # self.styles['display'] = "block"
+        # self.styles['position'] = "absolute"
         # self.styles['text-align'] = "center"
         #self.styles['border'] = "solid"
         self.styles['border-width']="1px"
@@ -50,6 +50,7 @@ class HTMLComponent:
         self.innerHTML = ""
         self.setDominantColor()
         self.SetBorderColor()
+        self.SetupGrid()
         if self.attributes['tag'] in ['a', 'button', 'p']:
             self.innerHTML = self.get_inner_html(text)
             if self.attributes['tag'] == "a":
@@ -87,6 +88,57 @@ class HTMLComponent:
             color[2]-=40
         self.styles['border-color']='rgb('+str(int(color[2]))+','+str(int(color[1]))+','+str(int(color[0]))+')'
         return color
+    def SetupGrid(self):
+        #block size is 50x50
+        self.block_size=20;
+        self.grid=[]
+        self.rows=int(self.h/self.block_size)+2
+        self.cols=12
+        self.blockwidth=int(self.w/12)
+        if(self.parent!=None):
+            self.col_size = int(self.w / self.parent.blockwidth)+1
+        else:
+            self.col_size=12
+        for i in range(self.rows):
+            self.grid.append([])
+            for j in range(self.cols):
+                self.grid[i].append(0)
+    def PopulateGrid(self):
+        for element in self.sub:
+            i=int(element.y/self.block_size)
+            if i>0:
+                i-=1
+            j=int(element.x/self.blockwidth)
+            print(i,j,element.x,element.y,self.blockwidth,self.w,self.rows)
+            if(self.grid[i][j]==0):
+                self.grid[i][j]=element
+            # else:
+            #     self.grid[i][j-1]=element
+            if element.col_size > 1:
+                for k in range(1,element.col_size):
+                    if j+k<12:
+                        self.grid[i][j+k]=1
+    def CodeGrid(self):
+        code=self.StartTag()
+        css=self.getCSSCode()
+        for i in range(self.rows):
+            code+="<div class='row'>\n"
+            for j in range(self.cols):
+                if(self.grid[i][j]==0):
+                    code += "<div class='col-sm-1'></div>\n"
+                    continue
+                code+="<div class='col-sm-"+str(self.grid[i][j].col_size)+"'>\n"
+                c1,css1=self.grid[i][j].CodeGrid()
+                code+=c1
+                css+=css1
+                code+="</div>"
+            code+="</div>"
+        if(len(self.sub)==0):
+            code+=self.innerHTML
+        code+=self.CloseTag();
+        return code,css;
+
+
     def getFontSize(self):
         boxes = pytesseract.image_to_boxes(self.img)
         line = boxes.split("\n")

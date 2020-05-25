@@ -232,7 +232,41 @@ class HtmlMapper:
     #     # cv2.waitKey()
     #     # self.g(image.copy(), webpage)
     #     return webpage
+    def MapGrid(self,element,code,path,options,cssCode,level=0):#experimental
+        another_path = "processor/static/generated_resources/"
+        save_path = path + "images/"  # path provided for saving images
+        access_path = "images/"  # path provided to webpage for later access
+        imname = str(element.x) + '-' + str(element.y) + element.attributes['tag'] + ".png"
+        cssCode += element.getCSSCode()
+        cv2.imwrite(save_path + imname, element.getImage())
+        cv2.imwrite(another_path + "images/" + imname, element.getImage())
+        if options['image-type'] == 0:
+            imname = "default_image.png"
+        if element.attributes['tag'] == 'img':
+            element.attributes['src'] = access_path + imname
+        if element.attributes['tag'] == 'i':
+            element.styles['background'] = "url(" + access_path + imname + ")"
+        element.PopulateGrid()
+        code+= element.StartTag()
+        cssCode+= element.getCSSCode()
+        if (len(element.sub) == 0):
+            code += element.innerHTML
+        else:
+            for i in range(element.rows):
+                code += (level*"\t")+"<div class='row'>\n"
+                for j in range(element.cols):
+                    if (element.grid[i][j] == 0):
+                        code += (level*"\t")+"\t<div class='col-sm-1'></div>\n"
+                        continue
+                    if (element.grid[i][j] == 1):
+                        continue
+                    code += "<div class='col-sm-" + str(element.grid[i][j].col_size) + "'>\n"
+                    code, cssCode = self.MapGrid(element.grid[i][j],code,path,options,cssCode,level+1)
+                    code += "</div>\n"
+                code += "</div>\n"
 
+        code += element.CloseTag();
+        return code, cssCode
     def map_dom_tree(self, element, code, path, options,cssCode, level=0):
         another_path = "processor/static/generated_resources/"
         save_path = path + "images/"  # path provided for saving images
@@ -247,6 +281,7 @@ class HtmlMapper:
             element.attributes['src'] = access_path + imname
         if element.attributes['tag'] == 'i':
             element.styles['background'] = "url(" + access_path + imname + ")"
+        #element.SetupGrid()
         code += '\t' *level
         code += element.StartTag()
         idx = 0
@@ -346,7 +381,8 @@ class HtmlMapper:
         options['comm-channel'].put(4)
         parentElement = self.image_to_elements(parentElement, options)
         options['comm-channel'].put(75)
-        s,css = self.map_dom_tree(parentElement, "", path, options,"", 0)
+        #s,css = self.map_dom_tree(parentElement, "", path, options,"", 0)
+        s, css = self.MapGrid(parentElement, "", path, options, "", 0)
         s="<head><link rel='stylesheet' href='styles.css'>" \
           "<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css'></head>"+s
         return s,css
