@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import copy
 from operator import itemgetter
 from PIL import Image
 import pytesseract
@@ -17,12 +18,16 @@ class HTMLComponent:
         self.attributes = attributes
         self.classes = []
         self.parent = parent
-        w = img.shape[1]
-        h = img.shape[0]
+        if(type(self.img)!=int):
+            w = img.shape[1]
+            h = img.shape[0]
+
+
         # self.styles['left'] = str(x) + "px"
         # self.styles['top'] = str(y) + "px"
         # self.styles['width'] = str(w) + "px"
-        # self.styles['height'] = str(h) + "px"
+        if self.attributes['tag'] in ["button", "a", "input", "p"]:
+            self.styles['height'] = str(h) + "px"
         # self.styles['display'] = "block"
         # self.styles['position'] = "absolute"
         # self.styles['text-align'] = "center"
@@ -32,7 +37,7 @@ class HTMLComponent:
         self.styles['background-color'] = "rgb(255, 255, 255)"
         #self.styles['font-size'] = "12px"
         self.styles['font-size']=str(self.getFontSize())+"px"
-        self.styles['white-space'] = "nowrap"
+        # self.styles['white-space'] = "nowrap"
         # if self.attributes['tag'] == 'a':
         #     self.styles['font-size'] = str(h) + "px"
         self.styles['font-family'] = "Arial, Helvetica, sans-serif"
@@ -49,7 +54,7 @@ class HTMLComponent:
         self.sub = []  # sub elements
         self.innerHTML = ""
         self.setDominantColor()
-        self.SetBorderColor()
+        #self.SetBorderColor()
         self.SetupGrid()
         if self.attributes['tag'] in ['a', 'button', 'p']:
             self.innerHTML = self.get_inner_html(text)
@@ -69,12 +74,22 @@ class HTMLComponent:
     def setImage(self, img):
         self.img = img
     def setBSclass(self):
+        self.attributes['class']=""
         if(self.attributes['tag']=='button'):
             self.attributes['class']='btn'
         if (self.attributes['tag'] == 'input'):
             self.attributes['class'] = 'form-control'
+        if(self.attributes['tag']=='img'):
+            self.attributes['class'] = 'img-fluid'
+        # if(self.attributes['tag']=='ul'):
+        #     self.attributes['class'] = 'list-group'
+        
+        if(self.attributes['tag'] not in ["section","div","body"] ):
+            self.attributes['class'] +=" w-100"
     def SetBorderColor(self):
         colors=[]
+        if(type(self.img)==int):
+            return None
         w = self.img.shape[1]
         for i in range(w):
             colors.append(self.img[0][i])
@@ -88,36 +103,139 @@ class HTMLComponent:
             color[2]-=40
         self.styles['border-color']='rgb('+str(int(color[2]))+','+str(int(color[1]))+','+str(int(color[0]))+')'
         return color
+    def CalcualteBlocks(self):
+        self.block_size=1
+        self.col_size = int(self.w / self.parent.blockwidth)
     def SetupGrid(self):
         #block size is 50x50
-        self.block_size=20;
+        self.block_size=1
         self.grid=[]
         self.rows=int(self.h/self.block_size)+2
         self.cols=12
         self.blockwidth=int(self.w/12)
+       
+
         if(self.parent!=None):
-            self.col_size = int(self.w / self.parent.blockwidth)+1
+            self.col_size = int(self.w / self.parent.blockwidth)
         else:
             self.col_size=12
+        
         for i in range(self.rows):
             self.grid.append([])
             for j in range(self.cols):
                 self.grid[i].append(0)
+    
+    def CheckEmptyRow(self,i):
+        if(i<self.rows):
+            for j in self.grid[i]:
+                if(type(j)!=int or j!=1):
+                    return False;
+        return True; 
+    def CheckEmptyRowZero(self,i):
+        if(i<self.rows):
+            for j in self.grid[i]:
+                if(type(j)!=int or j!=0):
+                    return False;
+        return True; 
     def PopulateGrid(self):
-        for element in self.sub:
+        index=len(self.sub)-1
+        # if(self.attributes['tag']=='section'):
+        #     self.rows=len(self.sub)
+        #     self.block_size=self.h/self.rows
+        print("Populting grid of element:",self.attributes['tag'],"rows",self.rows,self.cols)
+        while index>=0:
+            element=self.sub[index]
+            index-=1
+            self.printGrid()
             i=int(element.y/self.block_size)
             if i>0:
                 i-=1
             j=int(element.x/self.blockwidth)
-            print(i,j,element.x,element.y,self.blockwidth,self.w,self.rows)
+            if j>=12:
+                j=11
+            org_i=i
+            org_j=j
+            print(element.attributes['tag'],"tries to be at",i,j)
+            while(self.CheckEmptyRow(i)):
+                i-=1
+                if(i<0):
+                    break
+            if(i<0):
+                i=org_i
+            print(i,j)
+            while(self.grid[i][j]==-1):
+                    j-=1
+                    if(j<0):
+                        j=org_j
+                        break
+                    print(i,j)
             if(self.grid[i][j]==0):
+                print(element.attributes['tag'],"placed at",i,j)
                 self.grid[i][j]=element
-            # else:
-            #     self.grid[i][j-1]=element
+                temp=i
+                while temp<element.h/self.block_size:
+                    temp+=1
+                    if(self.CheckEmptyRowZero(temp)):
+                        self.grid[int(temp)]=[1]*12
+                #print(self.grid)
+            
+            elif(self.grid[i][j]!=1):
+                    if(self.attributes['tag']=='section'):
+                        ##the one with greater height wins
+                        if element.h>self.grid[i][j].h:
+                            self.grid[i][j]=element
+
+                    elif(self.grid[i][j].attributes['tag']=='section'):
+                        print(element.attributes['tag'],"added as a child with",self.grid[i][j].attributes['tag'], "at",i,j)
+                        height_composite=self.grid[i][j].h+element.h+(element.y-self.grid[i][j].y)
+                        width_composite=max(element.w,self.grid[i][j].w)
+                        new_section=HTMLComponent(1,j*self.blockwidth,(i)*self.block_size,height_composite,width_composite,{"tag": "section"},-1,self,0)
+                        for e1 in self.grid[i][j].sub:
+                            e1.parent=new_section
+                            e1.CalcualteBlocks()
+                            new_section.sub.append(e1)
+                        element.parent=new_section
+                        element.x -= j * self.blockwidth#-element.x
+                        element.y -= i * self.block_size#-element.
+                        element.CalcualteBlocks()
+                        new_section.sub.append(element)
+                        self.grid[i][j]=new_section
+                    #make a  composite element
+                    else:
+                        print(element.attributes['tag'],"made composite with",self.grid[i][j].attributes['tag'], "at",i,j)
+                        height_composite=self.grid[i][j].h+element.h+(element.y-self.grid[i][j].y)
+                        width_composite=max(element.w,self.grid[i][j].w)
+                        composite_element=HTMLComponent(1,j*self.blockwidth,(i+1)*self.block_size,height_composite,width_composite,{"tag": "section"},-1,self,0)
+                        self.grid[i][j].x-=j*self.blockwidth#-self.grid[i][j].x
+                        self.grid[i][j].y-=i*self.block_size#self.grid[i][j].y
+                        element.x -= j * self.blockwidth#-element.x
+                        element.y -= i * self.block_size#-element.
+                        self.grid[i][j].parent=composite_element;
+                        element.parent=composite_element;
+                        element.CalcualteBlocks()
+                        self.grid[i][j].CalcualteBlocks()
+                        composite_element.sub.append((self.grid[i][j]))
+                        composite_element.sub.append((element))
+                        composite_element.innerHTML="I'm Composite-deep copy"
+                        self.grid[i][j]=(composite_element)
+            else:
+                print(element.attributes['tag'], "was not placed anywhere",i,j)
+                #self.grid[self.rows-1][j]=element
             if element.col_size > 1:
                 for k in range(1,element.col_size):
                     if j+k<12:
-                        self.grid[i][j+k]=1
+                        if(self.grid[i][j+k]!=0):
+                            break
+                        self.grid[i][j+k]=-1
+    def printGrid(self):
+        for i in range(self.rows):
+            for j in range(12):
+                if(type(self.grid[i][j])!=int):
+                    print(self.grid[i][j].attributes['tag'],end=" ")
+                else:
+                    print(self.grid[i][j],end=" ")
+            print("")
+            
     def CodeGrid(self):
         code=self.StartTag()
         css=self.getCSSCode()
@@ -126,6 +244,8 @@ class HTMLComponent:
             for j in range(self.cols):
                 if(self.grid[i][j]==0):
                     code += "<div class='col-sm-1'></div>\n"
+                    continue
+                if(self.grid[i][j]==1 or self.grid[i][j]==-1):
                     continue
                 code+="<div class='col-sm-"+str(self.grid[i][j].col_size)+"'>\n"
                 c1,css1=self.grid[i][j].CodeGrid()
@@ -138,8 +258,17 @@ class HTMLComponent:
         code+=self.CloseTag();
         return code,css;
 
-
+    def assignAbsPosition(self):
+        self.styles['left'] = str(self.x) + "px"
+        self.styles['top'] = str(self.y) + "px"
+        self.styles['width'] = str(self.w) + "px"
+        self.styles['height'] = str(self.h) + "px"
+        self.styles['display'] = "block"
+        self.styles['position'] = "absolute"
+        self.styles['text-align'] = "center"
     def getFontSize(self):
+        if(type(self.img)==int):
+            return 12
         boxes = pytesseract.image_to_boxes(self.img)
         line = boxes.split("\n")
         sizes=[]
@@ -202,6 +331,8 @@ class HTMLComponent:
 
     def setDominantColor(self):
         # You may need to convert the color.
+        if type(self.img)==int:
+            return
         my_img = np.array(self.img, dtype=np.uint8)
         my_img = cv2.cvtColor(my_img, cv2.COLOR_BGR2RGB)
         pil_image = Image.fromarray(my_img)

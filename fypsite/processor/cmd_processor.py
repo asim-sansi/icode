@@ -4,7 +4,7 @@ from .src import processor as en
 def Run():
     comm_channel = Queue()
     another_path = r"E:\ICode\icode\fypsite\processor\static\templates/"
-    imgName="github-semi.png"
+    imgName="stack-semi.png"
     while imgName!="exit":
         image = Image.open(another_path+imgName)
         dict = {

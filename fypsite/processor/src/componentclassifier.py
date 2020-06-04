@@ -43,9 +43,9 @@ class ComponentClassifier:
     answer = folders[labels[0]]
     print(answer)
     print(probas[0][labels[0]])
-    if(probas[0][labels[0]]>=0.4):
-      return answer.copy()
-    return {'tag':'img'}
+    # if(probas[0][labels[0]]>=0.4):
+    return answer.copy()
+    # return {'tag':'img'}
 
     #return answer.copy()
 
